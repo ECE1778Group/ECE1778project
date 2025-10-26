@@ -1,0 +1,79 @@
+services:
+  elasticsearch:
+    profiles:
+      - dev
+      - release
+    image: elasticsearch:9.1.5
+    container_name: elasticsearch
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: false
+    ports:
+      - "9200:9200/tcp"
+      - "9300:9300/tcp"
+    networks:
+      - backend-network
+
+  # for visualize data in elasticsearch only
+  kibana:
+    profiles:
+      - dev
+    image: kibana:9.1.5
+    container_name: kibana
+    ports:
+      - "5601:5601/tcp"
+    networks:
+      - backend-network
+
+  redis:
+    profiles:
+      - dev
+      - release
+    image: redis:8.2.2
+    container_name: redis
+    ports:
+      - "6379:6379/tcp"
+    networks:
+      - backend-network
+
+  redis_insight:
+    profiles:
+      - dev
+    image: redis/redisinsight:2.70
+    container_name: redisinsight
+    ports:
+      - "5540:5540/tcp"
+    networks:
+      - backend-network
+
+  mysql:
+    profiles:
+      - dev
+      - release
+    container_name: mysql
+    image: mariadb:12.0.2
+    ports:
+      - "3306:3306/tcp"
+    networks:
+      - backend-network
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+
+  phpmyadmin:
+    profiles:
+      - dev
+    container_name: phpmyadmin
+    image: phpmyadmin:5.2.3
+    ports:
+      - "8080:80/tcp"
+    networks:
+      - backend-network
+    environment:
+      - PMA_ARBITRARY=1
+
+
+
+networks:
+  backend-network: {
+    driver: bridge
+  }

@@ -42,3 +42,9 @@ yarn-error.*
 
 # IDE generated file
 .idea/
+
+# python cache
+**/__pycache__/*
+
+# django sqlite
+**/db.sqlite3
