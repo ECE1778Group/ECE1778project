@@ -1,0 +1,1 @@
+This folder mimic a cloud storage

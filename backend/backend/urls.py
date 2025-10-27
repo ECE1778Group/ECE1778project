@@ -23,4 +23,6 @@ urlpatterns = [
     path('api/service/products/', list_products),
     path('api/seller/register/', seller_register),
     path('api/seller/details/<str:username>/', get_seller_details),
+    path('api/product/create/', add_product),
+    path('api/product/search/', list_products),
 ]
