@@ -1,4 +1,24 @@
 services:
+  backend:
+    profiles:
+      - dev
+    image: backend:latest
+    container_name: backend
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - ./:/backend
+    command: bash -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    networks:
+      - backend-network
+    ports:
+      - "8000:80/tcp"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+
   elasticsearch:
     profiles:
       - dev
@@ -13,6 +33,12 @@ services:
       - "9300:9300/tcp"
     networks:
       - backend-network
+    healthcheck:
+      test: curl -fs http://localhost:9200/_cluster/health  | grep green
+      interval: 2s
+      timeout: 20s
+      retries: 10
+
 
   # for visualize data in elasticsearch only
   kibana:
@@ -58,6 +84,14 @@ services:
       - backend-network
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ece1778
+      MYSQL_USER: django
+      MYSQL_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    healthcheck:
+      test: ss -nltp | grep 3306
+      interval: 2s
+      timeout: 20s
+      retries: 10
 
   phpmyadmin:
     profiles:
