@@ -20,5 +20,7 @@ from .views import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/service/products/', list_products)
+    path('api/service/products/', list_products),
+    path('api/seller/register/', seller_register),
+    path('api/seller/details/<str:username>/', get_seller_details),
 ]
