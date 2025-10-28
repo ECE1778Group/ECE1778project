@@ -25,6 +25,8 @@ dev profile provies extra visualization tools:
 
 phpmyadmin on port 8080, redis insight on port 5540, kibana on port 5601, backend-dev-container on 8000
 
+init elasticsearch index by running esIndexInit.py this will set up tokenizer for search
+
 #### important
 
 MYSQL_ROOT_PASSWORD environment variable ***must*** be set to start mysql

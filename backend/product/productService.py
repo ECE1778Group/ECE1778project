@@ -1,11 +1,10 @@
 import json
 import logging
-import uuid
 from dataclasses import asdict
 
 from elasticsearch import Elasticsearch
-from .globalvars import get_es_client
-from .entities.product import Product
+from backend.globalvars import get_es_client
+from product.product import Product
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)

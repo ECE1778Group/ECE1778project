@@ -4,8 +4,8 @@ import logging
 
 from elasticsearch import Elasticsearch
 
-from .entities.seller import Seller
-from .globalvars import get_es_client
+from user.seller import Seller
+from backend.globalvars import get_es_client
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
