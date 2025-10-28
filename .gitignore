@@ -48,3 +48,6 @@ yarn-error.*
 
 # django sqlite
 **/db.sqlite3
+
+# images
+**/imageStorage/*

@@ -34,3 +34,7 @@ MYSQL_ROOT_PASSWORD environment variable ***must*** be set to start mysql
 development code will be mapped into dev container so that it will be on the same network to other services
 
 changing of dependency need to rebuild the image
+
+### documentation
+
+api document available at /api/docs

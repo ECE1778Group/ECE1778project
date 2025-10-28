@@ -33,6 +33,7 @@ SELLER_INDEX = {
     },
     "mappings": {
         "properties": {
+            "username": {"type": "keyword"},
             "name": {"type": "text", "analyzer": "standard"},
             "description": {"type": "text", "analyzer": "standard"},
         }
