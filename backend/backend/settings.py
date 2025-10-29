@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'backend.startupConfig.StartupConfig',
     'product',
     'user',
+    'order',
 ]
 
 MIDDLEWARE = [

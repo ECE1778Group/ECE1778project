@@ -1,8 +1,8 @@
 import logging
 
-from django.http import HttpRequest
 from drf_spectacular.utils import extend_schema
-from rest_framework.exceptions import NotFound, ValidationError
+from rest_framework import status
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -18,7 +18,7 @@ class SellerRegisterView(APIView):
         summary='add seller',
         request=SellerSerializer,
         responses={
-            200: {'type': 'object', 'properties': {'username': {'type': 'string'}}},
+            201: SellerSerializer,
             400: {
                 "example": {
                     "name": ["This field is required."]
@@ -26,14 +26,14 @@ class SellerRegisterView(APIView):
             }
         },
     )
-    def post(self, request:HttpRequest):
-        data = request.POST
+    def post(self, request:Response):
+        data = request.data
         logger.info(data)
         serializer = SellerSerializer(data=data)
         if serializer.is_valid():
-            username = data.get("username")
-            sellerService.seller_register(Seller(**serializer.validated_data))
-            return Response({"username": username})
+            seller = Seller(**serializer.validated_data)
+            sellerService.seller_register(seller)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             raise ValidationError(serializer.errors)
 

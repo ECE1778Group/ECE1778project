@@ -2,6 +2,7 @@ import logging
 
 from django.http import HttpRequest
 from drf_spectacular.utils import extend_schema
+from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -19,7 +20,7 @@ class CustomerRegisterView(APIView):
         summary='add Customer',
         request=CustomerSerializer,
         responses={
-            200: {'type': 'object', 'properties': {'username': {'type': 'string'}}},
+            201: CustomerSerializer,
             400: {
                 "example": {
                     "name": ["This field is required."]
@@ -32,9 +33,9 @@ class CustomerRegisterView(APIView):
         logger.info(data)
         serializer = CustomerSerializer(data=data)
         if serializer.is_valid():
-            username = request.data.get("username")
-            customerService.customer_register(Customer(**serializer.validated_data))
-            return Response({"username": username})
+            customer = Customer(**serializer.validated_data)
+            customerService.customer_register(customer)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             raise ValidationError(serializer.errors)
 

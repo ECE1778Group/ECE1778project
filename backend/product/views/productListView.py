@@ -1,5 +1,4 @@
 import logging
-import uuid
 
 from django.http import HttpRequest
 from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiParameter
@@ -8,7 +7,6 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from product import productService
-from product.product import Product
 from product.serializers import ProductSerializer
 
 logger = logging.getLogger(__name__)

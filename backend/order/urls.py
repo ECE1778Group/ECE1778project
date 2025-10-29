@@ -14,19 +14,13 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.contrib import admin
-from django.urls import path, include
-from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
+from django.urls import path
+
+from order.views.orderCreateView import OrderCreateView
+from order.views.orderDetailsView import OrderDetailsView
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-
-    path('api/user/', include('user.urls')),
-
-    path('api/product/', include('product.urls')),
-    path('api/order/', include('order.urls')),
-    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),        # OpenAPI JSON
-    path('api/docs/', SpectacularSwaggerView.as_view(), name='swagger-ui'),  # SwaggerUI
-    path('api/redoc/', SpectacularRedocView.as_view(), name='redoc'),
+    path("", OrderCreateView.as_view()),
+    path("<str:id>/", OrderDetailsView.as_view()),
 ]
 
