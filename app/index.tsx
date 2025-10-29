@@ -1,10 +1,10 @@
-import React, { useMemo, useState } from "react";
-import { View, FlatList, TextInput, Pressable, StyleSheet } from "react-native";
+import React, {useMemo, useState} from "react";
+import {FlatList, Pressable, StyleSheet, TextInput, View} from "react-native";
 import ItemCard from "../components/ItemCard";
-import { globalStyles } from "../styles/globalStyles";
-import { colors } from "../styles/colors";
-import { ArrowDownWideNarrow } from "lucide-react-native";
-import { MarketplaceItem } from "../types";
+import {globalStyles} from "../styles/globalStyles";
+import {colors} from "../styles/colors";
+import {ArrowDownWideNarrow} from "lucide-react-native";
+import {MarketplaceItem} from "../types";
 
 //Test Items
 const items: MarketplaceItem[] = [
@@ -55,8 +55,9 @@ export default function Market() {
   return (
     <View style={globalStyles.container}>
       <View style={styles.searchRow}>
-        <Pressable style={styles.filterButton} onPress={() => {}} accessibilityRole="button" accessibilityLabel="Filter">
-          <ArrowDownWideNarrow size={20} color={colors.textPrimary} />
+        <Pressable style={styles.filterButton} onPress={() => {
+        }} accessibilityRole="button" accessibilityLabel="Filter">
+          <ArrowDownWideNarrow size={20} color={colors.textPrimary}/>
         </Pressable>
         <TextInput
           style={styles.searchInput}
@@ -72,7 +73,7 @@ export default function Market() {
       <FlatList
         data={data}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
+        renderItem={({item}) => (
           <ItemCard
             id={item.id}
             title={item.title}
@@ -83,7 +84,7 @@ export default function Market() {
             createdAt={item.createdAt}
           />
         )}
-        contentContainerStyle={{ paddingVertical: 8 }}
+        contentContainerStyle={{paddingVertical: 8}}
         keyboardShouldPersistTaps="handled"
       />
     </View>
