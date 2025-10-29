@@ -1,6 +1,7 @@
 import {Redirect, Tabs, useSegments} from "expo-router";
 import {CartProvider} from "../contexts/CartContext";
 import {AuthProvider, useAuth} from "../contexts/AuthContext";
+import {ProfileProvider} from "../contexts/ProfileContext";
 
 function AppShell() {
   const {isAuthenticated, skipped} = useAuth();
@@ -26,7 +27,10 @@ function AppShell() {
 
       <Tabs.Screen name="index" options={{title: "Market", tabBarLabel: "Market"}}/>
       <Tabs.Screen name="cart" options={{title: "Cart", tabBarLabel: "Cart"}}/>
-      <Tabs.Screen name="item/[id]" options={{title: "Item Information", href: null, tabBarLabel: () => null}}/>
+      <Tabs.Screen name="item/[id]" options={{title: "Item Information", href: null}}/>
+
+      <Tabs.Screen name="profile" options={{title: "Profile", tabBarLabel: "Profile"}}/>
+      <Tabs.Screen name="settings" options={{title: "Settings", href: null}}/>
     </Tabs>
   );
 }
@@ -35,7 +39,9 @@ export default function RootLayout() {
   return (
     <AuthProvider>
       <CartProvider>
-        <AppShell/>
+        <ProfileProvider>
+          <AppShell/>
+        </ProfileProvider>
       </CartProvider>
     </AuthProvider>
   );
