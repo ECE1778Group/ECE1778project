@@ -9,6 +9,7 @@ export type BaseItem = {
   distanceKm?: number;
   createdAt?: string | number | Date;
   courseCode?: string;
+  stock?: number;
 };
 
 export type BookItem = BaseItem & {
@@ -28,5 +29,4 @@ export type ItemMap = {
 };
 
 export type MarketplaceItem = ItemMap[keyof ItemMap];
-
 export type ItemKind = keyof ItemMap;

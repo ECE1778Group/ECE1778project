@@ -1,9 +1,10 @@
-import React, { useMemo } from "react";
-import { View, Text, Image, ScrollView, Pressable, StyleSheet, Alert } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { globalStyles } from "../../styles/globalStyles";
-import { colors } from "../../styles/colors";
-import { MarketplaceItem } from "../../types";
+import React, {useMemo} from "react";
+import {Image, Pressable, ScrollView, StyleSheet, Text, View} from "react-native";
+import {useLocalSearchParams, useRouter} from "expo-router";
+import {globalStyles} from "../../styles/globalStyles";
+import {colors} from "../../styles/colors";
+import {MarketplaceItem} from "../../types";
+import {useCart} from "../../contexts/CartContext";
 
 const items: MarketplaceItem[] = [
   {
@@ -17,6 +18,7 @@ const items: MarketplaceItem[] = [
     createdAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
     isbn: "978-1-23456-789-7",
     authors: ["A. Author"],
+    stock: 3,
   },
   {
     id: "2",
@@ -27,6 +29,7 @@ const items: MarketplaceItem[] = [
     distanceKm: 1.3,
     courseCode: "MAT223",
     createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
+    stock: 5,
   },
   {
     id: "3",
@@ -38,6 +41,7 @@ const items: MarketplaceItem[] = [
     courseCode: "",
     createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
     category: "home",
+    stock: 1,
   },
 ];
 
@@ -48,15 +52,16 @@ function formatPrice(n: number) {
 }
 
 export default function ItemDetail() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const {id} = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const {add} = useCart();
 
   const item = useMemo(() => items.find((it) => it.id === String(id)), [id]);
 
   if (!item) {
     return (
-      <View style={[globalStyles.container, { alignItems: "center", justifyContent: "center" }]}>
-        <Text style={{ color: colors.textPrimary, fontSize: 16 }}>Not found</Text>
+      <View style={[globalStyles.container, {alignItems: "center", justifyContent: "center"}]}>
+        <Text style={{color: colors.textPrimary, fontSize: 16}}>Not found</Text>
       </View>
     );
   }
@@ -66,7 +71,7 @@ export default function ItemDetail() {
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.mediaBox}>
           {item.imageUrl ? (
-            <Image source={{ uri: item.imageUrl }} style={styles.image} resizeMode="cover" />
+            <Image source={{uri: item.imageUrl}} style={styles.image} resizeMode="cover"/>
           ) : (
             <View style={styles.imagePlaceholder}>
               <Text style={styles.imagePlaceholderText}>No Image</Text>
@@ -88,19 +93,35 @@ export default function ItemDetail() {
               <Text style={styles.tagText}>{item.distanceKm.toFixed(1)} km</Text>
             </View>
           ) : null}
+          {item.stock != null ? (
+            <View style={styles.tag}>
+              <Text style={styles.tagText}>Stock {item.stock}</Text>
+            </View>
+          ) : null}
         </View>
 
         <Text style={styles.sectionTitle}>Details</Text>
-        <Text style={styles.bodyText}>
-          This is mock detail data for local testing. Replace with backend data later.
-        </Text>
+        <Text style={styles.bodyText}>This is mock detail data for local testing.</Text>
       </ScrollView>
 
       <View style={styles.actionBar}>
-        <Pressable style={styles.cartBtn} onPress={() => Alert.alert("Added to cart")}>
+        <Pressable
+          style={styles.cartBtn}
+          onPress={() => add(item, 1)}
+          accessibilityRole="button"
+          accessibilityLabel="Add to cart"
+        >
           <Text style={styles.actionText}>Add to Cart</Text>
         </Pressable>
-        <Pressable style={styles.buyBtn} onPress={() => Alert.alert("Buy now")}>
+        <Pressable
+          style={styles.buyBtn}
+          onPress={() => {
+            add(item, 1);
+            router.push("/cart");
+          }}
+          accessibilityRole="button"
+          accessibilityLabel="Buy now"
+        >
           <Text style={styles.buyText}>Buy Now</Text>
         </Pressable>
       </View>
