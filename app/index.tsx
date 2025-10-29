@@ -1,12 +1,13 @@
-import React, { useMemo, useState } from "react";
-import { View, FlatList, TextInput, Pressable, StyleSheet } from "react-native";
+import React, {useMemo, useState} from "react";
+import {FlatList, Pressable, StyleSheet, TextInput, View} from "react-native";
+import {useRouter} from "expo-router";
 import ItemCard from "../components/ItemCard";
-import { globalStyles } from "../styles/globalStyles";
-import { colors } from "../styles/colors";
-import { ArrowDownWideNarrow } from "lucide-react-native";
-import { MarketplaceItem } from "../types";
-import { useRouter } from "expo-router";
+import {globalStyles} from "../styles/globalStyles";
+import {colors} from "../styles/colors";
+import {ArrowDownWideNarrow, ShoppingCart} from "lucide-react-native";
+import {MarketplaceItem} from "../types";
 
+//Test Items
 const items: MarketplaceItem[] = [
   {
     id: "1",
@@ -56,8 +57,9 @@ export default function Market() {
   return (
     <View style={globalStyles.container}>
       <View style={styles.searchRow}>
-        <Pressable style={styles.filterButton} onPress={() => {}} accessibilityRole="button" accessibilityLabel="Filter">
-          <ArrowDownWideNarrow size={20} color={colors.textPrimary} />
+        <Pressable style={styles.filterButton} onPress={() => {
+        }} accessibilityRole="button" accessibilityLabel="Filter">
+          <ArrowDownWideNarrow size={20} color={colors.textPrimary}/>
         </Pressable>
         <TextInput
           style={styles.searchInput}
@@ -73,7 +75,7 @@ export default function Market() {
       <FlatList
         data={data}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
+        renderItem={({item}) => (
           <ItemCard
             id={item.id}
             title={item.title}
@@ -82,12 +84,21 @@ export default function Market() {
             distanceKm={item.distanceKm}
             courseCode={item.courseCode}
             createdAt={item.createdAt}
-            onPress={() => router.push({ pathname: "/item/[id]", params: { id: item.id } })}
+            onPress={() => router.push({pathname: "/item/[id]", params: {id: item.id}})}
           />
         )}
-        contentContainerStyle={{ paddingVertical: 8 }}
+        contentContainerStyle={{paddingVertical: 8, paddingBottom: 96}}
         keyboardShouldPersistTaps="handled"
       />
+
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Open cart"
+        onPress={() => router.push("/cart")}
+        style={({pressed}) => [styles.fab, pressed && styles.fabPressed]}
+      >
+        <ShoppingCart size={22} color={colors.white}/>
+      </Pressable>
     </View>
   );
 }
@@ -117,5 +128,25 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 8,
+  },
+  fab: {
+    position: "absolute",
+    right: 18,
+    bottom: 24,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.primary,
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    shadowOffset: {width: 0, height: 3},
+    elevation: 5,
+  },
+  fabPressed: {
+    transform: [{scale: 0.98}],
+    opacity: 0.9,
   },
 });

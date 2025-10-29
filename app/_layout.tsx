@@ -27,8 +27,8 @@ function AppShell() {
 
       <Tabs.Screen name="index" options={{title: "Market", tabBarLabel: "Market"}}/>
       <Tabs.Screen name="chat" options={{ title: "Chat", tabBarLabel: "Chat" }} />
-      <Tabs.Screen name="cart" options={{title: "Cart", tabBarLabel: "Cart"}}/>
 
+      <Tabs.Screen name="cart" options={{title: "Cart", href: null}}/>
       <Tabs.Screen name="item/[id]" options={{title: "Item Information", href: null}}/>
       <Tabs.Screen name="chat/[threadId]" options={{title: "Chat", href: null}}/>
 
