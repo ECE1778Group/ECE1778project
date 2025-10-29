@@ -4,20 +4,25 @@ import ItemCard from "../components/ItemCard";
 import { globalStyles } from "../styles/globalStyles";
 import { colors } from "../styles/colors";
 import { ArrowDownWideNarrow } from "lucide-react-native";
+import { MarketplaceItem } from "../types";
 
 //Test Items
-const items = [
+const items: MarketplaceItem[] = [
   {
     id: "1",
+    kind: "book",
     title: "ECE472 Textbook (9th ed.)",
     price: 45,
     imageUrl: "https://picsum.photos/seed/ece472/200/200",
     distanceKm: 0.7,
     courseCode: "ECE472",
     createdAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+    isbn: "978-1-23456-789-7",
+    authors: ["A. Author"],
   },
   {
     id: "2",
+    kind: "book",
     title: "Linear Algebra Notes Bundle",
     price: 10,
     imageUrl: "https://picsum.photos/seed/la/200/200",
@@ -27,12 +32,14 @@ const items = [
   },
   {
     id: "3",
+    kind: "other",
     title: "Dorm Lamp",
     price: 0,
     imageUrl: "https://picsum.photos/seed/lamp/200/200",
     distanceKm: 0.3,
     courseCode: "",
     createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    category: "home",
   },
 ];
 
@@ -65,7 +72,17 @@ export default function Market() {
       <FlatList
         data={data}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <ItemCard {...item} />}
+        renderItem={({ item }) => (
+          <ItemCard
+            id={item.id}
+            title={item.title}
+            price={item.price}
+            imageUrl={item.imageUrl}
+            distanceKm={item.distanceKm}
+            courseCode={item.courseCode}
+            createdAt={item.createdAt}
+          />
+        )}
         contentContainerStyle={{ paddingVertical: 8 }}
         keyboardShouldPersistTaps="handled"
       />
