@@ -23,7 +23,7 @@ class ProductView(APIView):
         request=ProductSerializer,
         responses={
             201: ProductSerializer,
-            400: OpenApiResponse(description="product info not complete"),
+            400: OpenApiResponse(description="product info not complete or no picture uploaded"),
         },
     )
     def post(self, request: Request):
