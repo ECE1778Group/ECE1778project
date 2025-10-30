@@ -114,15 +114,12 @@ export default function ItemDetail() {
           <Text style={styles.actionText}>Add to Cart</Text>
         </Pressable>
         <Pressable
-          style={styles.buyBtn}
-          onPress={() => {
-            add(item, 1);
-            router.push("/cart");
-          }}
+          style={styles.contactBtn}
+          onPress={() => router.push({pathname: "/chat/[threadId]", params: {threadId: String(id)}})}
           accessibilityRole="button"
-          accessibilityLabel="Buy now"
+          accessibilityLabel="Contact seller"
         >
-          <Text style={styles.buyText}>Buy Now</Text>
+          <Text style={styles.contactText}>Contact Seller</Text>
         </Pressable>
       </View>
     </View>
@@ -223,7 +220,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
   },
-  buyBtn: {
+  contactBtn: {
     flex: 1,
     backgroundColor: colors.primary,
     borderRadius: 10,
@@ -231,7 +228,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingVertical: 12,
   },
-  buyText: {
+  contactText: {
     color: colors.white,
     fontSize: 16,
     fontWeight: "700",
