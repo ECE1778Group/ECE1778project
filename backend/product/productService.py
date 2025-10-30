@@ -2,7 +2,7 @@ import json
 import logging
 
 from dataclasses import asdict
-from elasticsearch import Elasticsearch
+from elasticsearch import Elasticsearch, NotFoundError
 from backend.globalvars import get_es_client
 from product.product import Product
 
@@ -55,9 +55,12 @@ def add_or_update_product(product: Product, product_id: str):
 
 
 
-def get_product_by_id(product_id):
+def get_product_by_id(product_id) -> Product|None:
     es: Elasticsearch = get_es_client()
-    es_result = es.get(index="product", id=product_id)
-    logger.info(es_result)
-    product = Product(**es_result["_source"])
-    return product
+    try:
+        es_result = es.get(index="product", id=product_id)
+        logger.info(es_result)
+        product = Product(**es_result["_source"])
+        return product
+    except NotFoundError:
+        return None

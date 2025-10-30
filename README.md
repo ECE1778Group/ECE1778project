@@ -11,11 +11,11 @@ navigate to backend folder, build backend develop container by
 for develop environment, use
 
 
-> docker-compose --profile dev up
+> docker-compose --profile dev up -d
 
 for release environment, use
 
-> docker-compose --profile release up
+> docker-compose --profile release up -d
 
 all profile provides following service:
 

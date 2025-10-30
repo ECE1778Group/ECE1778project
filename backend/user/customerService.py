@@ -9,7 +9,10 @@ def customer_register(customer: Customer):
     customer.save()
 
 
-def get_customer_details(username: str) -> Customer:
-    customer = Customer.objects.get(username=username)
-    return customer
+def get_customer_details(username: str) -> Customer|None:
+    try:
+        customer = Customer.objects.get(username=username)
+        return customer
+    except Customer.DoesNotExist:
+        return None
 
