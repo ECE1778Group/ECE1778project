@@ -6,7 +6,7 @@ import { colors } from "../styles/colors";
 export default function SettingsScreen() {
   return (
     <View style={[globalStyles.container, styles.center]}>
-      <Text style={styles.text}>Settings (coming soon)</Text>
+      <Text style={styles.text}>Settings (coming s∞n)</Text>
     </View>
   );
 }

@@ -2,7 +2,7 @@ import {Redirect, Tabs, useSegments} from "expo-router";
 import {CartProvider} from "../contexts/CartContext";
 import {AuthProvider, useAuth} from "../contexts/AuthContext";
 import {ProfileProvider} from "../contexts/ProfileContext";
-import {MessageCircle, Store, Tag, User} from "lucide-react-native";
+import {Package, Store, Tag, User} from "lucide-react-native";
 
 function AppShell() {
   const {isAuthenticated, skipped} = useAuth();
@@ -36,10 +36,10 @@ function AppShell() {
         tabBarLabel: "Sell",
         tabBarIcon: ({color, size}) => <Tag color={color} size={size}/>
       }}/>
-      <Tabs.Screen name="chat" options={{
-        title: "Chat",
-        tabBarLabel: "Chat",
-        tabBarIcon: ({color, size}) => <MessageCircle color={color} size={size}/>
+      <Tabs.Screen name="order" options={{
+        title: "Order",
+        tabBarLabel: "Order",
+        tabBarIcon: ({color, size}) => <Package color={color} size={size}/>
       }}/>
       <Tabs.Screen name="profile" options={{
         title: "Profile",
@@ -48,7 +48,8 @@ function AppShell() {
       }}/>
 
       <Tabs.Screen name="cart" options={{title: "Cart", href: null}}/>
-      <Tabs.Screen name="item/[id]" options={{title: "Item Information", href: null}}/>
+      <Tabs.Screen name="item/[id]" options={{title: "Item Details", href: null}}/>
+      <Tabs.Screen name="order/[id]" options={{title: "Order Details", href: null}}/>
       <Tabs.Screen name="chat/[threadId]" options={{title: "Chat", href: null}}/>
 
       <Tabs.Screen name="settings" options={{title: "Settings", href: null}}/>
