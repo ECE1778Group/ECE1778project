@@ -21,7 +21,7 @@ from .views.userRegisterView import UserRegisterView
 
 urlpatterns = [
 
-    path('user/register/', UserRegisterView.as_view()),
-    path('user/<str:username>/', UserView.as_view()),
+    path('register/', UserRegisterView.as_view()),
+    path('<str:username>/', UserView.as_view()),
 ]
 

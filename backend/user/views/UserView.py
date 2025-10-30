@@ -15,7 +15,7 @@ class UserView(APIView):
         summary='get User details',
         request={'type': 'object', 'properties': {'username': {'type': 'string'}}},
         responses={
-            200: UserSerializer(),
+            200: UserSerializer,
             404: {
                 "example": {
                     "detail": "Not found."
