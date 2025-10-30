@@ -1,8 +1,10 @@
-import {Redirect, Tabs, useSegments} from "expo-router";
+import {Redirect, Tabs, useRouter, useSegments} from "expo-router";
 import {CartProvider} from "../contexts/CartContext";
 import {AuthProvider, useAuth} from "../contexts/AuthContext";
 import {ProfileProvider} from "../contexts/ProfileContext";
-import {Package, Store, Tag, User} from "lucide-react-native";
+import {ArrowLeft, Package, Store, Tag, User} from "lucide-react-native";
+import {Pressable} from "react-native";
+import {colors} from "../styles/colors";
 
 function AppShell() {
   const {isAuthenticated, skipped} = useAuth();
@@ -13,8 +15,17 @@ function AppShell() {
     return <Redirect href="/auth/login"/>;
   }
 
+  function BackButton() {
+    const router = useRouter();
+    return (
+      <Pressable onPress={() => router.back()} style={{paddingHorizontal: 12}}>
+        <ArrowLeft size={20} color={colors.textPrimary}/>
+      </Pressable>
+    );
+  }
+
   return (
-    <Tabs>
+    <Tabs screenOptions={{animation: "shift"}} backBehavior="history">
       <Tabs.Screen
         name="auth/login"
         options={{
@@ -47,12 +58,12 @@ function AppShell() {
         tabBarIcon: ({color, size}) => <User color={color} size={size}/>
       }}/>
 
-      <Tabs.Screen name="cart" options={{title: "Cart", href: null}}/>
-      <Tabs.Screen name="item/[id]" options={{title: "Item Details", href: null}}/>
-      <Tabs.Screen name="order/[id]" options={{title: "Order Details", href: null}}/>
-      <Tabs.Screen name="chat/[threadId]" options={{title: "Chat", href: null}}/>
+      <Tabs.Screen name="cart" options={{title: "Cart", href: null, headerLeft: () => <BackButton/>}}/>
+      <Tabs.Screen name="item/[id]" options={{title: "Item Details", href: null, headerLeft: () => <BackButton/>}}/>
+      <Tabs.Screen name="order/[id]" options={{title: "Order Details", href: null, headerLeft: () => <BackButton/>}}/>
+      <Tabs.Screen name="chat/[threadId]" options={{title: "Chat", href: null, headerLeft: () => <BackButton/>}}/>
 
-      <Tabs.Screen name="settings" options={{title: "Settings", href: null}}/>
+      <Tabs.Screen name="settings" options={{title: "Settings", href: null, headerLeft: () => <BackButton/>}}/>
     </Tabs>
   );
 }
