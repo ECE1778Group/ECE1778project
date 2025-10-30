@@ -6,8 +6,8 @@ import {globalStyles} from "../styles/globalStyles";
 import {colors} from "../styles/colors";
 import {ArrowDownWideNarrow, ShoppingCart} from "lucide-react-native";
 import {MarketplaceItem} from "../types";
+import {useCart} from "../contexts/CartContext";
 
-//Test Items
 const items: MarketplaceItem[] = [
   {
     id: "1",
@@ -47,12 +47,15 @@ const items: MarketplaceItem[] = [
 export default function Market() {
   const [text, setText] = useState("");
   const router = useRouter();
+  const {count} = useCart();
 
   const data = useMemo(() => {
     const q = text.trim().toLowerCase();
     if (!q) return items;
     return items.filter((it) => it.title.toLowerCase().includes(q));
   }, [text]);
+
+  const filled = count > 0;
 
   return (
     <View style={globalStyles.container}>
@@ -95,9 +98,13 @@ export default function Market() {
         accessibilityRole="button"
         accessibilityLabel="Open cart"
         onPress={() => router.push("/cart")}
-        style={({pressed}) => [styles.fab, pressed && styles.fabPressed]}
+        style={({pressed}) => [
+          styles.fab,
+          filled ? styles.fabFilled : styles.fabEmpty,
+          pressed && styles.fabPressed,
+        ]}
       >
-        <ShoppingCart size={22} color={colors.white}/>
+        <ShoppingCart size={22} color={filled ? colors.white : colors.primary}/>
       </Pressable>
     </View>
   );
@@ -138,12 +145,19 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: colors.primary,
     shadowColor: "#000",
     shadowOpacity: 0.2,
     shadowRadius: 6,
     shadowOffset: {width: 0, height: 3},
     elevation: 5,
+  },
+  fabFilled: {
+    backgroundColor: colors.primary,
+  },
+  fabEmpty: {
+    backgroundColor: colors.secondary,
+    borderColor: colors.border,
+    borderWidth: 1,
   },
   fabPressed: {
     transform: [{scale: 0.98}],

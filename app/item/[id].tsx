@@ -1,10 +1,12 @@
-import React, {useMemo} from "react";
-import {Image, Pressable, ScrollView, StyleSheet, Text, View} from "react-native";
+// app/item/[id].tsx
+import React, {useMemo, useRef, useState} from "react";
+import {Animated, Easing, Image, Pressable, ScrollView, StyleSheet, Text, View} from "react-native";
 import {useLocalSearchParams, useRouter} from "expo-router";
 import {globalStyles} from "../../styles/globalStyles";
 import {colors} from "../../styles/colors";
 import {MarketplaceItem} from "../../types";
 import {useCart} from "../../contexts/CartContext";
+import {ShoppingCart} from "lucide-react-native";
 
 const items: MarketplaceItem[] = [
   {
@@ -54,9 +56,56 @@ function formatPrice(n: number) {
 export default function ItemDetail() {
   const {id} = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const {add} = useCart();
+  const {add, count} = useCart();
 
   const item = useMemo(() => items.find((it) => it.id === String(id)), [id]);
+
+  const imgBoxRef = useRef<View>(null);
+  const fabRef = useRef<View>(null);
+  const [flyVisible, setFlyVisible] = useState(false);
+  const [flyUri, setFlyUri] = useState<string | undefined>(undefined);
+  const flyXY = useRef(new Animated.ValueXY({x: 0, y: 0})).current;
+  const flyScale = useRef(new Animated.Value(1)).current;
+  const flyOpacity = useRef(new Animated.Value(1)).current;
+
+  const startFly = () => {
+    if (!item) return;
+    if (!imgBoxRef.current || !fabRef.current) {
+      add(item, 1);
+      return;
+    }
+    imgBoxRef.current.measureInWindow((ix, iy, iw, ih) => {
+      fabRef.current?.measureInWindow((fx, fy, fw, fh) => {
+        const startX = ix + iw / 2 - 32;
+        const startY = iy + ih / 2 - 32;
+        const endX = fx + fw / 2 - 24;
+        const endY = fy + fh / 2 - 24;
+        flyXY.setValue({x: startX, y: startY});
+        flyScale.setValue(1);
+        flyOpacity.setValue(1);
+        setFlyUri(item.imageUrl);
+        setFlyVisible(true);
+        add(item, 1);
+        Animated.parallel([
+          Animated.timing(flyXY, {
+            toValue: {x: endX, y: endY},
+            duration: 550,
+            easing: Easing.inOut(Easing.quad),
+            useNativeDriver: false
+          }),
+          Animated.timing(flyScale, {
+            toValue: 0.5,
+            duration: 550,
+            easing: Easing.out(Easing.quad),
+            useNativeDriver: false
+          }),
+          Animated.timing(flyOpacity, {toValue: 0.1, duration: 550, easing: Easing.linear, useNativeDriver: false}),
+        ]).start(() => {
+          setFlyVisible(false);
+        });
+      });
+    });
+  };
 
   if (!item) {
     return (
@@ -66,10 +115,12 @@ export default function ItemDetail() {
     );
   }
 
+  const filled = count > 0;
+
   return (
     <View style={globalStyles.container}>
       <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.mediaBox}>
+        <View ref={imgBoxRef} style={styles.mediaBox}>
           {item.imageUrl ? (
             <Image source={{uri: item.imageUrl}} style={styles.image} resizeMode="cover"/>
           ) : (
@@ -104,10 +155,30 @@ export default function ItemDetail() {
         <Text style={styles.bodyText}>This is mock detail data for local testing.</Text>
       </ScrollView>
 
+      {flyVisible && flyUri ? (
+        <Animated.Image
+          source={{uri: flyUri}}
+          style={[
+            styles.flyImage,
+            {
+              left: flyXY.x,
+              top: flyXY.y,
+              transform: [{scale: flyScale}],
+              opacity: flyOpacity,
+            },
+          ]}
+          resizeMode="cover"
+        />
+      ) : null}
+
       <View style={styles.actionBar}>
         <Pressable
           style={styles.cartBtn}
-          onPress={() => add(item, 1)}
+          onPress={() => {
+            if (!item) return;
+            add(item, 1);
+            router.push("/cart");
+          }}
           accessibilityRole="button"
           accessibilityLabel="Add to cart"
         >
@@ -122,6 +193,21 @@ export default function ItemDetail() {
           <Text style={styles.contactText}>Contact Seller</Text>
         </Pressable>
       </View>
+
+      <View ref={fabRef} style={styles.fabWrapper}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Open cart"
+          onPress={() => router.push("/cart")}
+          style={({pressed}) => [
+            styles.fab,
+            filled ? styles.fabFilled : styles.fabEmpty,
+            pressed && styles.fabPressed,
+          ]}
+        >
+          <ShoppingCart size={22} color={filled ? colors.white : colors.primary}/>
+        </Pressable>
+      </View>
     </View>
   );
 }
@@ -129,7 +215,7 @@ export default function ItemDetail() {
 const styles = StyleSheet.create({
   content: {
     paddingHorizontal: 16,
-    paddingBottom: 100,
+    paddingBottom: 140,
   },
   mediaBox: {
     width: "100%",
@@ -232,5 +318,40 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontSize: 16,
     fontWeight: "700",
+  },
+  fabWrapper: {
+    position: "absolute",
+    right: 18,
+    bottom: 96,
+  },
+  fab: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    shadowOffset: {width: 0, height: 3},
+    elevation: 5,
+  },
+  fabFilled: {
+    backgroundColor: colors.primary,
+  },
+  fabEmpty: {
+    backgroundColor: colors.secondary,
+    borderColor: colors.border,
+    borderWidth: 1,
+  },
+  fabPressed: {
+    transform: [{scale: 0.98}],
+    opacity: 0.9,
+  },
+  flyImage: {
+    position: "absolute",
+    width: 64,
+    height: 64,
+    borderRadius: 8,
   },
 });

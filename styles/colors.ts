@@ -7,6 +7,8 @@ export const colors = {
   black: "#000",
   primary: "#007bff",
   primaryPressed: "#0056b3",
+  secondary: "#a1cbf7",
+  secondaryPressed: "#a1a6ab",
   danger: "#dc3545",
   dangerPressed: "#a71d31",
 };

@@ -51,3 +51,7 @@ yarn-error.*
 
 # images
 **/imageStorage/*
+
+# env
+/.env
+/backend/.env
