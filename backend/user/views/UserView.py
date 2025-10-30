@@ -5,19 +5,17 @@ from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from user import sellerService
-from user.serializers import SellerSerializer
+from user.models import User
+from user.serializers import UserSerializer
 
 logger = logging.getLogger(__name__)
 
-
-class SellerView(APIView):
-
+class UserView(APIView):
     @extend_schema(
-        summary='get seller details',
+        summary='get User details',
         request={'type': 'object', 'properties': {'username': {'type': 'string'}}},
         responses={
-            200: SellerSerializer,
+            200: UserSerializer(),
             404: {
                 "example": {
                     "detail": "Not found."
@@ -26,9 +24,9 @@ class SellerView(APIView):
         },
     )
     def get(self, request,username):
-        seller = sellerService.get_seller_details(username)
-        if seller:
-            serializer = SellerSerializer(seller)
+        try:
+            user = User.objects.get(username=username)
+            serializer = UserSerializer(user)
             return Response(serializer.data)
-        else:
+        except User.DoesNotExist:
             raise NotFound()

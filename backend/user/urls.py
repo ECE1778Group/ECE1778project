@@ -16,15 +16,12 @@ Including another URLconf
 """
 from django.urls import path
 
-from .views.customerRegisterView import CustomerRegisterView
-from .views.sellerRegisterView import SellerRegisterView
-from .views.sellerView import SellerView
-from .views.customerView import CustomerView
-urlpatterns = [
-    path('seller/register/', SellerRegisterView.as_view()),
-    path('customer/register/', CustomerRegisterView.as_view()),
+from .views.UserView import UserView
+from .views.userRegisterView import UserRegisterView
 
-    path('seller/<str:username>/', SellerView.as_view()),
-    path('customer/<str:username>/', CustomerView.as_view()),
+urlpatterns = [
+
+    path('user/register/', UserRegisterView.as_view()),
+    path('user/<str:username>/', UserView.as_view()),
 ]
 
