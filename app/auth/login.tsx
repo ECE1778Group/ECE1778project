@@ -62,7 +62,7 @@ export default function Login() {
       </View>
 
       <Pressable style={[styles.primaryBtn, !canSubmit && styles.disabled]} onPress={onSubmit} disabled={!canSubmit}>
-        <Text style={styles.primaryText}>Sign In/Sign Up</Text>
+        <Text style={styles.primaryText}>Sign In / Sign Up</Text>
       </Pressable>
 
       <Pressable style={styles.ghostBtn} onPress={onSkip}>
