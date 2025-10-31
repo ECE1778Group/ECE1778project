@@ -31,7 +31,6 @@ function AppShell() {
         options={{
           title: "Login",
           href: null,
-          tabBarLabel: () => null,
           tabBarStyle: {display: "none"},
           headerShown: false
         }}
