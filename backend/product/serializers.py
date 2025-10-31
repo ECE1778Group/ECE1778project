@@ -8,5 +8,4 @@ class ProductSerializer(serializers.Serializer):
     picture_url = serializers.URLField(read_only=True)
     category = serializers.CharField()
     seller_username = serializers.CharField()
-    seller_name = serializers.CharField()
     quantity = serializers.IntegerField()

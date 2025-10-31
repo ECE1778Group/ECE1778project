@@ -8,5 +8,4 @@ class Product:
     picture_url: str
     category: str
     seller_username: str
-    seller_name: str
     quantity: int

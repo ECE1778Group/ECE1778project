@@ -2,6 +2,7 @@ import logging
 import uuid
 
 from django.http import HttpRequest
+from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiParameter
 from rest_framework import status
 from rest_framework.exceptions import NotFound, ValidationError
@@ -20,7 +21,21 @@ class ProductView(APIView):
 
     @extend_schema(
         summary='add product',
-        request=ProductSerializer,
+        request={
+            'multipart/form-data': {
+                'type': 'object',
+                'properties': {
+                    'title': {'type': 'string'},
+                    'description': {'type': 'string'},
+                    'category': {'type': 'string'},
+                    'seller_username': {'type': 'string'},
+                    'price': {'type': 'number'},
+                    'quantity': {'type': 'number'},
+                    'picture': {'type': 'string', 'format': 'binary'},
+                },
+                'required': ['title', 'description', 'category', 'seller_username', 'price', 'picture'],
+            }
+        },
         responses={
             201: ProductSerializer,
             400: OpenApiResponse(description="product info not complete or no picture uploaded"),
