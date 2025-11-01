@@ -13,6 +13,7 @@ PRODUCT_INDEX = {
     },
     "mappings": {
         "properties": {
+            "id": {"type": "keyword"},
             "title": {"type": "text", "analyzer": "standard"},
             "description": {"type": "text", "analyzer": "standard"},
             "price": {"type": "float"},
@@ -29,12 +30,7 @@ def create_product_index():
     es.indices.create(index="product", body=PRODUCT_INDEX)
     print(f"[INFO] product index created")
 
-def create_seller_index():
-    es.indices.create(index="seller", body=SELLER_INDEX)
-    print(f"[INFO] seller index created")
-
 
 
 if __name__ == "__main__":
     create_product_index()
-    create_seller_index()

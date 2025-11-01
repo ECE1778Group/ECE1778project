@@ -1,11 +1,9 @@
 import logging
 import uuid
 
-from django.http import HttpRequest
-from drf_spectacular.types import OpenApiTypes
-from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiParameter
+from drf_spectacular.utils import extend_schema, OpenApiResponse
 from rest_framework import status
-from rest_framework.exceptions import NotFound, ValidationError
+from rest_framework.exceptions import ValidationError
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -51,8 +49,8 @@ class ProductView(APIView):
             picture_url = f"backend/imageStorage/{product_id}.jpg"
             with open(picture_url, "wb") as file:
                 file.write(picture.read())
-            product = Product(picture_url=picture_url, **serializer.validated_data)
-            productService.add_or_update_product(product, product_id)
+            product = Product(id=product_id, picture_url=picture_url, **serializer.validated_data)
+            productService.add_or_update_product(product)
             return Response({'id': product_id, "picture_url": picture_url, **serializer.data},
                             status=status.HTTP_201_CREATED)
         else:

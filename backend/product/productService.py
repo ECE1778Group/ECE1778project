@@ -47,12 +47,12 @@ def list_products_by_keyword(keyword: str, sort_field: str = "price", sort_order
     return products
 
 
-def add_or_update_product(product: Product, product_id: str):
+def add_or_update_product(product: Product):
     es: Elasticsearch = get_es_client()
     document = asdict(product)
     logger.debug(json.dumps(document))
-    es.index(index="product", id=product_id, document=document)
-    logger.info(f"Product {product_id} created")
+    es.index(index="product", id=product.id, document=document)
+    logger.info(f"Product {product.id} created/updated")
 
 
 

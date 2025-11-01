@@ -4,6 +4,7 @@ from drf_spectacular.utils import extend_schema, OpenApiResponse
 from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.status import HTTP_201_CREATED
 from rest_framework.views import APIView
 
 from product import productService
@@ -34,13 +35,27 @@ class ProductDetailsView(APIView):
 
     @extend_schema(
         summary='modify a product',
-        request=ProductSerializer,
+        request={
+            'multipart/form-data': {
+                'type': 'object',
+                'properties': {
+                    'title': {'type': 'string'},
+                    'description': {'type': 'string'},
+                    'category': {'type': 'string'},
+                    'seller_username': {'type': 'string'},
+                    'price': {'type': 'number'},
+                    'quantity': {'type': 'number'},
+                    'picture': {'type': 'string', 'format': 'binary'},
+                },
+                'required': ['title', 'description', 'category', 'seller_username', 'price', 'picture'],
+            }
+        },
         responses={
-            200: {'type': 'object', 'properties': {'id': {'type': 'string'}}},
-            400: OpenApiResponse(description="product info not complete"),
+            201: ProductSerializer,
+            400: OpenApiResponse(description="product info not complete or no picture uploaded"),
         },
     )
-    def put(self, request: Request, product_id: str) -> OpenApiResponse:
+    def put(self, request: Request, product_id: str) -> Response:
         data = request.data
         picture = request.FILES.get("picture")
         logger.info(data)
@@ -50,7 +65,8 @@ class ProductDetailsView(APIView):
             with open(picture_url, "wb") as file:
                 file.write(picture.read())
             productService.add_or_update_product(
-                Product(picture_url=picture_url, **serializer.validated_data), product_id)
-            return OpenApiResponse({'id': product_id})
+                Product(id=product_id, picture_url=picture_url, **serializer.validated_data))
+            return Response({'id': product_id, "picture_url": picture_url, **serializer.data},
+                            status=HTTP_201_CREATED)
         else:
             raise ValidationError(serializer.errors)

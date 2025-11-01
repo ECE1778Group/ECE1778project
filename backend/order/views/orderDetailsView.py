@@ -21,13 +21,12 @@ class OrderDetailsView(APIView):
             404: NotFound,
         },
     )
-    def get(self, request: Request, id: str) -> Response:
+    def get(self, request: Request, order_number: str) -> Response:
         data = request.data
         logger.info(data)
-        order: Order = orderService.get_order_by_id(id)
+        order: MasterOrder = orderService.get_order_by_id(order_number)
         if order:
-            order_data = OrderSerializer(order).data
-            order_data['id'] = str(order.id)
-            return Response(order_data)
+            logger.info(f"Order: {order.order_number}")
+            return Response(OrderSerializer(order).data)
         else:
             raise NotFound()

@@ -1,59 +1,83 @@
 import logging
+from collections import defaultdict
 
+from django.db import transaction
 from drf_spectacular.utils import extend_schema
-from elasticsearch import Elasticsearch
-from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_201_CREATED
 from rest_framework.views import APIView
 from snowflake import SnowflakeGenerator
 
-from backend.globalvars import get_es_client
-from order import orderService
-from order.models import Order
-from order.serializers import OrderSerializer
+from order.models import MasterOrder, SubOrder, OrderItem
+from order.serializers import OrderSerializer, OrderCreateRequestSerializer
+from product import productService
 from product.product import Product
 
 logger = logging.getLogger(__name__)
-
+generator = SnowflakeGenerator(1)
 
 class OrderCreateView(APIView):
     @extend_schema(
         summary='create order',
-        request=OrderSerializer,
+        request=OrderCreateRequestSerializer,
         responses={
             201: OrderSerializer,
-            400: {
-                "example": {
-                    "price": ["This field is required."]
-                }
-            }
+            400: {"example": {"error": "string"}},
         },
     )
-    # TODO add validation
+
+    @transaction.atomic
     def post(self, request: Request) -> Response:
-        data = request.data
-        logger.info(data)
-        serializer = OrderSerializer(data=data)
-        if serializer.is_valid():
-            generator = SnowflakeGenerator(1)
-            id = next(generator)
-            order = Order(id=id, **serializer.validated_data)
-            product_id = order.product_id
-            es: Elasticsearch = get_es_client()
-            es_result = es.get(index="product", id=product_id.hex)
-            product = Product(**es_result.get("_source"))
-            if product and product.quantity >= order.quantity:
-                orderService.create_order(order)
-                # don't consider data consistency here
-                es.update(index="product", id=product_id.hex, doc={
-                    "quantity": product.quantity - order.quantity,
-                })
-                return Response({"id": str(id), **serializer.data}, status=status.HTTP_201_CREATED)
-            else:
-                raise ValidationError({"message": "This product is not available"})
-        else:
-            raise ValidationError(serializer.errors)
+        ser = OrderCreateRequestSerializer(data=request.data)
+        ser.is_valid(raise_exception=True)
+        items = ser.validated_data['items']
+        customer_username = ser.validated_data['customer_username']
+        seller_groups = defaultdict(list)
+        total_amount = 0
+
+        # group products by sellers
+        for row in items:
+            product: Product|None = productService.get_product_by_id(product_id=row["product_id"])
+            if product is None:
+                return Response({"error": f"product {row['product_id']} not found"}, status=HTTP_400_BAD_REQUEST)
+            if product.quantity < row["quantity"]:
+                return Response({"error": f"product {row['product_id']} stock insufficient"}, status=HTTP_400_BAD_REQUEST)
+            subtotal = row["quantity"] * product.price
+            seller_groups[product.seller_username].append((product, row["quantity"], subtotal))
+            total_amount += subtotal
+
+        master_order_number = next(generator)
+        master_order = MasterOrder.objects.create(
+            order_number=master_order_number,
+            customer_username=customer_username,
+            total_amount=total_amount,
+        )
+
+        for seller_username, rows in seller_groups.items():
+            sub_order_number = f"S{next(generator)}"
+            sub_total = sum(r[2] for r in rows)
+            SubOrder.objects.create(
+                master_order_number=master_order_number,
+                sub_order_number=sub_order_number,
+                seller_username=seller_username,
+                total_amount=sub_total,
+            )
+
+            OrderItem.objects.bulk_create([
+                OrderItem(
+                    sub_order_number=sub_order_number,
+                    product_id=r[0].id,
+                    quantity=r[1],
+                    unit_price=r[0].price,
+                    total_amount=r[2],
+                ) for r in rows
+            ])
+
+            for product, qty, _ in rows:
+                product.quantity -= qty
+                productService.add_or_update_product(product)
+        return Response(OrderSerializer(master_order).data, status=HTTP_201_CREATED)
 
 

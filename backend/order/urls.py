@@ -21,6 +21,6 @@ from order.views.orderDetailsView import OrderDetailsView
 
 urlpatterns = [
     path("", OrderCreateView.as_view()),
-    path("<str:id>/", OrderDetailsView.as_view()),
+    path("<str:order_number>/", OrderDetailsView.as_view()),
 ]
 
