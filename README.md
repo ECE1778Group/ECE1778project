@@ -38,3 +38,27 @@ changing of dependency need to rebuild the image
 ### documentation
 
 api document available at /api/docs
+
+### real time chat API
+
+when user login, the mobile device will establish a websocket connection with server by ws://localhost:8000/chat/, 
+with a header "username". backend will save a mapping between username and this connection.
+
+when sending a chat message, the format should be like this
+
+```json
+{
+    "type": "chat_message",
+    "me": "alice",
+    "peer": "bob",
+    "message": "hello"
+}
+```
+the peer will receive a message like this
+```json
+{
+    "type": "chat_message",
+    "message": "hello",
+    "sender": "alice"
+}
+```
