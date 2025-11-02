@@ -1,9 +1,8 @@
 from django.test import TestCase
-
-# Create your tests here.
-from django.test import TestCase
+from rest_framework import status
 from rest_framework.test import APIClient
 
+# Create your tests here.
 class UserAPITest(TestCase):
     def setUp(self):
         self.client = APIClient()
@@ -22,3 +21,6 @@ class UserAPITest(TestCase):
         self.assertEqual(res2.status_code, 200)
         got = res2.json()
         self.assertEqual(got.get("username"), payload["username"])
+
+        res3 = self.client.get("/api/user/nonexistent_user/")
+        self.assertEqual(res3.status_code, status.HTTP_404_NOT_FOUND)
