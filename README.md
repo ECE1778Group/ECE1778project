@@ -62,3 +62,28 @@ the peer will receive a message like this
     "sender": "alice"
 }
 ```
+
+### running tests
+
+To run backend unit tests inside the Docker container:
+
+#### run all tests
+
+```bash
+docker compose exec backend python manage.py test
+```
+
+#### Run tests for a specific app
+
+```bash
+docker compose exec backend python manage.py test user
+```
+```bash
+docker compose exec backend python manage.py test order
+```
+```bash
+docker compose exec backend python manage.py test product
+```
+```bash
+docker compose exec backend python manage.py test chat
+```
