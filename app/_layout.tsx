@@ -6,6 +6,7 @@ import {ArrowLeft, Package, Store, Tag, User} from "lucide-react-native";
 import {Pressable} from "react-native";
 import {colors} from "../styles/colors";
 import { PaperProvider } from "react-native-paper";
+import { MessageProvider } from "../contexts/MessageContext";
 
 function AppShell() {
   const {isAuthenticated, skipped} = useAuth();
@@ -79,13 +80,15 @@ function AppShell() {
 export default function RootLayout() {
   return (
     <PaperProvider>
-      <AuthProvider>
-      <CartProvider>
-        <ProfileProvider>
-          <AppShell/>
-        </ProfileProvider>
-      </CartProvider>
-    </AuthProvider> 
+      <MessageProvider>
+        <AuthProvider>
+          <CartProvider>
+            <ProfileProvider>
+              <AppShell/>
+            </ProfileProvider>
+          </CartProvider>
+        </AuthProvider> 
+      </MessageProvider>
     </PaperProvider>
   );
 }
