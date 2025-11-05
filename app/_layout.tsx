@@ -5,6 +5,7 @@ import {ProfileProvider} from "../contexts/ProfileContext";
 import {ArrowLeft, Package, Store, Tag, User} from "lucide-react-native";
 import {Pressable} from "react-native";
 import {colors} from "../styles/colors";
+import { PaperProvider } from "react-native-paper";
 
 function AppShell() {
   const {isAuthenticated, skipped} = useAuth();
@@ -35,7 +36,15 @@ function AppShell() {
           headerShown: false
         }}
       />
-
+      <Tabs.Screen
+        name="auth/signup"
+        options={{
+          title: "Sign Up",
+          href: null,
+          tabBarStyle: { display: "none" },
+          headerShown: false,
+        }}
+      />
       <Tabs.Screen name="index" options={{
         title: "Market",
         tabBarLabel: "Market",
@@ -69,12 +78,14 @@ function AppShell() {
 
 export default function RootLayout() {
   return (
-    <AuthProvider>
+    <PaperProvider>
+      <AuthProvider>
       <CartProvider>
         <ProfileProvider>
           <AppShell/>
         </ProfileProvider>
       </CartProvider>
-    </AuthProvider>
+    </AuthProvider> 
+    </PaperProvider>
   );
 }
