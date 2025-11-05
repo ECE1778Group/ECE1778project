@@ -87,6 +87,8 @@ services:
       MYSQL_DATABASE: ece1778
       MYSQL_USER: django
       MYSQL_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - ./mysql-init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ss -nltp | grep 3306
       interval: 2s

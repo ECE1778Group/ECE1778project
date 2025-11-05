@@ -1,0 +1,8 @@
+CREATE DATABASE IF NOT EXISTS ece1778      CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+GRANT ALL PRIVILEGES ON ece1778.*      TO 'django'@'%';
+GRANT ALL PRIVILEGES ON test_ece1778.* TO 'django'@'%';
+
+GRANT CREATE, DROP ON *.* TO 'django'@'%';
+
+FLUSH PRIVILEGES;
