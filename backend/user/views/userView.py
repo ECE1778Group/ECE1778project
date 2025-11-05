@@ -3,12 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from drf_spectacular.utils import extend_schema
-from user.services.userService import (
-    send_verification_code,
-    verify_code,
-    create_user,
-    authenticate_user,
-)
+from user.services.userService import ( send_verification_code, verify_code, create_user, authenticate_user,)
 
 logger = logging.getLogger(__name__)
 
