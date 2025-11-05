@@ -36,6 +36,17 @@ export default function Signup() {
         );
     }, [emailError, passwordError, confirmError, codeError, firstName, lastName]);
 
+    const resetForm = () => {
+        setFirstName("");
+        setLastName("");
+        setEmail("");
+        setVerificationCode("");
+        setPassword("");
+        setConfirmPassword("");
+        setIsCodeSent(false);
+    };
+
+
     const handleSendCode = async () => {
         if (emailError) {
             showMessage("Please enter a valid email first", "error");
@@ -141,7 +152,8 @@ export default function Signup() {
             label="Password"
             value={password}
             onChangeText={setPassword}
-            textContentType="none"
+            textContentType="password"
+            autoComplete="off"
             secureTextEntry
             style={styles.input}
             error={passwordError}
@@ -157,7 +169,8 @@ export default function Signup() {
             label="Confirm Password"
             value={confirmPassword}
             onChangeText={setConfirmPassword}
-            textContentType="none"
+            textContentType="password"
+            autoComplete="off"
             secureTextEntry
             style={styles.input}
             error={confirmError}
@@ -179,7 +192,11 @@ export default function Signup() {
 
         <View style={styles.signInRow}>
             <Text style={styles.normalText}>Already have an account? </Text>
-            <TouchableOpacity onPress={() => router.push("/auth/login")}>
+            <TouchableOpacity onPress={() => {
+                resetForm();
+                router.push("/auth/login");
+                }}
+            >
                 <Text style={styles.linkText}>Sign In</Text>
             </TouchableOpacity>
         </View>
