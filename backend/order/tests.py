@@ -1,4 +1,4 @@
-from types import SimpleNamespace
+from product.product import Product 
 from unittest.mock import patch
 from django.test import TestCase
 from rest_framework.test import APIClient
@@ -11,22 +11,22 @@ class OrderAPITest(TestCase):
     @patch("order.views.orderCreateView.productService.get_product_by_id")
     def test_order_create_and_get(self, mock_get_product, mock_add_or_update):
         
-        product = SimpleNamespace(
-            id="p123",
-            title="Phone",
-            description="Test",
-            price=9999,          
-            picture_url="",
-            category="electronics",
-            seller_username="seller_x",
-            quantity=100
+        product_obj = Product(
+            id="book_123",
+            title="Operating Systems: Three Easy Pieces (Used)",
+            description="Gently used, minor notes, no missing pages.",
+            price=25.50,                 
+            picture_url="",             
+            category="books",
+            seller_username="alice",
+            quantity=1
         )
-        mock_get_product.return_value = product
+        mock_get_product.return_value = product_obj
         mock_add_or_update.return_value = None  
         payload = {
             "customer_username": "alice",
             "items": [
-                {"product_id": "p123", "quantity": 2, "unit_price": 9999}
+                {"product_id": "book_123", "quantity": 1, "unit_price": 25.50}
             ]
         }
         res = self.client.post("/api/order/", payload, format="json")
