@@ -1,8 +1,7 @@
-// lib/api/user.ts
 import { useFetch } from "./fetch-client";
 
 export const useUserApi = () => {
-  const { postData } = useFetch();
+  const { postData, patchData } = useFetch();
 
   const sendVerificationCode = async (email: string) => {
     return await postData("/api/user/sendVerificationCode/", { email });
@@ -22,8 +21,21 @@ export const useUserApi = () => {
     return await postData("/api/user/signup/", userData);
   };
 
-  const signin = async (username: string, password: string) => {
-    return await postData("/api/user/signin/", { username, password });
+  const signin = async (email: string, password: string) => {
+    return await postData("/api/user/signin/", { email, password });
+  };
+
+  const verifyToken = async (access: string) => {
+    return await postData("/api/token/verify/", { token: access });
+  };
+
+  const refreshToken = async (refresh: string) => {
+    return await postData("/api/token/refresh/", { refresh });
+  };
+
+  const updateProfile = async (token: string, fields: any) => {
+    const res = await patchData("/api/user/updateProfile/", fields, token);
+    return res;
   };
 
   return {
@@ -31,5 +43,8 @@ export const useUserApi = () => {
     verifyCode,
     signup,
     signin,
+    verifyToken,
+    refreshToken,
+    updateProfile,
   };
 };

@@ -4,10 +4,12 @@ import { TextInput, Button, Text, Divider } from "react-native-paper";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { colors } from "../../styles/colors";
+import { useMessage } from "../../contexts/MessageContext";
 
 export default function Login() {
   const router = useRouter();
   const { login, skip } = useAuth();
+  const { showMessage } = useMessage();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -21,9 +23,11 @@ export default function Login() {
     if (!canSubmit) return;
     try {
       await login(email.trim(), password);
-      router.replace("/"); 
+      console.log("...")
+      showMessage("Login successful!", "success");
+      router.replace("/");
     } catch {
-      alert("Login failed");
+      showMessage("Login failed. Please check your email or password.", "error");
     }
   };
 
@@ -48,12 +52,20 @@ export default function Login() {
         onChangeText={setEmail}
         keyboardType="email-address"
         autoCapitalize="none"
+        autoComplete="off"         
+        textContentType="none" 
+        autoCorrect={false}   
+        importantForAutofill="no" 
         style={styles.input}
       />
       <TextInput
         label="Password"
         value={password}
         onChangeText={setPassword}
+        autoComplete="off"         
+        textContentType="none" 
+        autoCorrect={false}   
+        importantForAutofill="no"
         secureTextEntry
         style={styles.input}
       />

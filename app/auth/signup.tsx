@@ -85,7 +85,6 @@ export default function Signup() {
             showMessage("Account created successfully!", "success");
             router.replace("/auth/login");
         } catch (err: any) {
-            console.log(err.message);
             showMessage(err.message || "Signup failed", "error");
         }
     };
@@ -152,8 +151,9 @@ export default function Signup() {
             label="Password"
             value={password}
             onChangeText={setPassword}
-            textContentType="password"
+            textContentType="none"
             autoComplete="off"
+            importantForAutofill="no" 
             secureTextEntry
             style={styles.input}
             error={passwordError}
@@ -169,8 +169,9 @@ export default function Signup() {
             label="Confirm Password"
             value={confirmPassword}
             onChangeText={setConfirmPassword}
-            textContentType="password"
+            textContentType="none"
             autoComplete="off"
+            importantForAutofill="no" 
             secureTextEntry
             style={styles.input}
             error={confirmError}
