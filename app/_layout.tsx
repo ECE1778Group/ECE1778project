@@ -1,3 +1,4 @@
+import React, {useEffect} from "react";
 import {Redirect, Tabs, useRouter, useSegments} from "expo-router";
 import {CartProvider} from "../contexts/CartContext";
 import {AuthProvider, useAuth} from "../contexts/AuthContext";
@@ -9,12 +10,23 @@ import { PaperProvider } from "react-native-paper";
 import { MessageProvider } from "../contexts/MessageContext";
 
 function AppShell() {
-  const {isAuthenticated, skipped} = useAuth();
+  const { loggedIn, isAuthLoading, user } = useAuth();
   const segments = useSegments();
   const inAuth = segments[0] === "auth";
+  const router = useRouter();
+  
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!isAuthLoading && !loggedIn && !inAuth) {
+        router.replace("/auth/login");
+      }
+    }, 0);
 
-  if (!isAuthenticated && !skipped && !inAuth) {
-    return <Redirect href="/auth/login"/>;
+    return () => clearTimeout(timer);
+  }, [loggedIn, inAuth, isAuthLoading]);
+
+  if (isAuthLoading) {
+      return null;
   }
 
   function BackButton() {

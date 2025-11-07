@@ -8,13 +8,18 @@ export const useFetch = () => {
   const [error, setError] = useState<string | null>(null);
 
   const request = useCallback(
-    async (endpoint: string, method: string, body?: any) => {
+    async (endpoint: string, method: string, body?: any, token?: string) => {
       setLoading(true);
       setError(null);
       try {
+        const headers: Record<string, string> = { "Content-Type": "application/json" };
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
+        }
+
         const res = await fetch(`${BASE_URL}${endpoint}`, {
           method,
-          headers: { "Content-Type": "application/json" },
+          headers,
           body: body ? JSON.stringify(body) : undefined,
         });
 
@@ -27,7 +32,6 @@ export const useFetch = () => {
 
         return data;
       } catch (err: any) {
-        console.error("API error:", err);
         setError(err.message);
         throw err;
       } finally {
@@ -38,24 +42,29 @@ export const useFetch = () => {
   );
 
   const getData = useCallback(
-    (endpoint: string) => request(endpoint, "GET"),
+    (endpoint: string, token?: string) => request(endpoint, "GET", undefined, token),
     [request]
   );
 
   const postData = useCallback(
-    (endpoint: string, body?: any) => request(endpoint, "POST", body),
+    (endpoint: string, body?: any, token?: string) => request(endpoint, "POST", body, token),
+    [request]
+  );
+
+  const patchData = useCallback(
+    (endpoint: string, body?: any, token?: string) => request(endpoint, "PATCH", body, token),
     [request]
   );
 
   const putData = useCallback(
-    (endpoint: string, body?: any) => request(endpoint, "PUT", body),
+    (endpoint: string, body?: any, token?: string) => request(endpoint, "PUT", body, token),
     [request]
   );
 
   const deleteData = useCallback(
-    (endpoint: string, body?: any) => request(endpoint, "DELETE", body),
+    (endpoint: string, body?: any, token?: string) => request(endpoint, "DELETE", body, token),
     [request]
   );
 
-  return { loading, error, getData, postData, putData, deleteData };
+  return { loading, error, getData, postData, patchData, putData, deleteData };
 };
