@@ -1,29 +1,35 @@
 from django.db import models
-from django.core.validators import MinLengthValidator, MaxLengthValidator, RegexValidator
-from django.contrib.auth.hashers import make_password, check_password
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 
-class User(models.Model):
-    user_id = models.AutoField(primary_key=True)
-    username = models.CharField(
-        max_length=20,
-        unique=True,
-        validators=[
-            MinLengthValidator(3),
-            MaxLengthValidator(20),
-            RegexValidator(regex=r'^[a-zA-Z0-9_-]+$', message="Only letters, numbers, -_ are allowed.")
-        ]
-    )
-    password = models.CharField(max_length=128)
+class UserManager(BaseUserManager):
+    def create_user(self, email, password=None, **extra_fields):
+        if not email:
+            raise ValueError("Email is required")
+        email = self.normalize_email(email)
+        user = self.model(email=email, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, email, password=None, **extra_fields):
+        extra_fields.setdefault("is_staff", True)
+        extra_fields.setdefault("is_superuser", True)
+        return self.create_user(email, password, **extra_fields)
+
+
+class User(AbstractBaseUser, PermissionsMixin):
+    id = models.AutoField(primary_key=True)
     email = models.EmailField(unique=True)
-    first_name = models.CharField(max_length=30)
-    last_name = models.CharField(max_length=30)
+    username = models.CharField(max_length=30, blank=True, null=True)
+    first_name = models.CharField(max_length=30, blank=True)
+    last_name = models.CharField(max_length=30, blank=True)
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
 
-    def set_password(self, raw_password):
-        self.password = make_password(raw_password)
-        self.save()
+    objects = UserManager()
 
-    def check_password(self, raw_password):
-        return check_password(raw_password, self.password)
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = []
 
     def __str__(self):
-        return self.username
+        return self.email
