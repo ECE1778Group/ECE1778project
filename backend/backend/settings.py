@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 import os
 from pathlib import Path
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -43,6 +44,8 @@ INSTALLED_APPS = [
     'product',
     'user',
     'order',
+    'rest_framework',
+    'rest_framework_simplejwt',
 ]
 
 MIDDLEWARE = [
@@ -85,7 +88,7 @@ DATABASES = {
         'HOST': 'mysql',
         'USER': 'django',
         'PASSWORD': os.environ.get('MYSQL_ROOT_PASSWORD'),
-        'POST': '3306',
+        'PORT': '3306',
         'NAME': 'ece1778',
     },
 }
@@ -159,6 +162,9 @@ LOGGING = {
 
 REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    )
 }
 
 SPECTACULAR_SETTINGS = {
@@ -194,3 +200,14 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'liaozijin7@gmail.com'
 EMAIL_HOST_PASSWORD = 'sqydxgkqofjxjujm'
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+AUTH_USER_MODEL = 'user.User'
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(hours=2),   # Access token 有效期
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),   # Refresh token 有效期
+    "ROTATE_REFRESH_TOKENS": True,                 # 每次刷新时生成新的 refresh
+    "BLACKLIST_AFTER_ROTATION": True,              # 旧 refresh 作废
+    "ALGORITHM": "HS256",
+    "SIGNING_KEY": SECRET_KEY,
+    "AUTH_HEADER_TYPES": ("Bearer",),
+}

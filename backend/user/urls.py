@@ -20,6 +20,7 @@ from user.views.userView import (
     VerifyCodeView,
     SignupView,
     SigninView,
+    UpdateProfileView,
 )
 
 urlpatterns = [
@@ -27,5 +28,6 @@ urlpatterns = [
     path("verifyCode/", VerifyCodeView.as_view()),
     path("signup/", SignupView.as_view()),
     path("signin/", SigninView.as_view()),
+    path("updateProfile/", UpdateProfileView.as_view()),
 ]
 
