@@ -1,5 +1,5 @@
 // app/item/[id].tsx
-import React, {useMemo, useRef, useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import {Animated, Easing, Image, Pressable, ScrollView, StyleSheet, Text, View} from "react-native";
 import {useLocalSearchParams, useRouter} from "expo-router";
 import {globalStyles} from "../../styles/globalStyles";
@@ -7,45 +7,7 @@ import {colors} from "../../styles/colors";
 import {MarketplaceItem} from "../../types";
 import {useCart} from "../../contexts/CartContext";
 import {ShoppingCart} from "lucide-react-native";
-
-const items: MarketplaceItem[] = [
-  {
-    id: "1",
-    kind: "book",
-    title: "ECE472 Textbook (9th ed.)",
-    price: 45,
-    imageUrl: "https://picsum.photos/seed/ece472/600/400",
-    distanceKm: 0.7,
-    courseCode: "ECE472",
-    createdAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
-    isbn: "978-1-23456-789-7",
-    authors: ["A. Author"],
-    stock: 3,
-  },
-  {
-    id: "2",
-    kind: "book",
-    title: "Linear Algebra Notes Bundle",
-    price: 10,
-    imageUrl: "https://picsum.photos/seed/la/600/400",
-    distanceKm: 1.3,
-    courseCode: "MAT223",
-    createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
-    stock: 5,
-  },
-  {
-    id: "3",
-    kind: "other",
-    title: "Dorm Lamp",
-    price: 0,
-    imageUrl: "https://picsum.photos/seed/lamp/600/400",
-    distanceKm: 0.3,
-    courseCode: "",
-    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-    category: "home",
-    stock: 1,
-  },
-];
+import {useProductApi} from "../../lib/api/product";
 
 function formatPrice(n: number) {
   if (!isFinite(n)) return "";
@@ -57,8 +19,47 @@ export default function ItemDetail() {
   const {id} = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const {add, count} = useCart();
+  const {getProduct} = useProductApi();
 
-  const item = useMemo(() => items.find((it) => it.id === String(id)), [id]);
+  const [item, setItem] = useState<MarketplaceItem | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      setNotFound(false);
+      const dto = await getProduct(String(id));
+      if (cancelled) return;
+      if (!dto) {
+        setNotFound(true);
+        setItem(null);
+      } else {
+        const cat = String(dto.category ?? "").toLowerCase();
+        const isBook = cat.includes("book");
+        const mapped: MarketplaceItem = {
+          id: String(dto.id),
+          kind: isBook ? "book" : "other",
+          title: String(dto.title),
+          price: Number(dto.price) || 0,
+          imageUrl: dto.picture_url || undefined,
+          distanceKm: undefined,
+          courseCode: undefined,
+          createdAt: undefined,
+          stock: typeof dto.quantity === "number" ? dto.quantity : undefined,
+          category: isBook ? undefined : (dto.category as string | undefined),
+          authors: undefined,
+          isbn: undefined,
+        };
+        setItem(mapped);
+      }
+      setLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
 
   const imgBoxRef = useRef<View>(null);
   const fabRef = useRef<View>(null);
@@ -107,7 +108,15 @@ export default function ItemDetail() {
     });
   };
 
-  if (!item) {
+  if (loading) {
+    return (
+      <View style={[globalStyles.container, {alignItems: "center", justifyContent: "center"}]}>
+        <Text style={{color: colors.textPrimary, fontSize: 16}}>Loading...</Text>
+      </View>
+    );
+  }
+
+  if (notFound || !item) {
     return (
       <View style={[globalStyles.container, {alignItems: "center", justifyContent: "center"}]}>
         <Text style={{color: colors.textPrimary, fontSize: 16}}>Not found</Text>
@@ -152,7 +161,7 @@ export default function ItemDetail() {
         </View>
 
         <Text style={styles.sectionTitle}>Details</Text>
-        <Text style={styles.bodyText}>This is mock detail data for local testing.</Text>
+        <Text style={styles.bodyText}></Text>
       </ScrollView>
 
       {flyVisible && flyUri ? (
@@ -174,11 +183,7 @@ export default function ItemDetail() {
       <View style={styles.actionBar}>
         <Pressable
           style={styles.cartBtn}
-          onPress={() => {
-            if (!item) return;
-            add(item, 1);
-            router.push("/cart");
-          }}
+          onPress={startFly}
           accessibilityRole="button"
           accessibilityLabel="Add to cart"
         >

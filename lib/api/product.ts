@@ -28,6 +28,16 @@ export const useProductApi = () => {
     }
   };
 
+  const getProduct = async (id: string) => {
+    try {
+      const res = await getData(`/api/product/${encodeURIComponent(id)}`);
+      return (res ?? null) as ProductDTO | null;
+    } catch (e: any) {
+      if (e?.status === 404) return null;
+      return null;
+    }
+  };
+
   const addProduct = async (form: FormData) => {
     const token = await AsyncStorage.getItem("access");
     const headers: Record<string, string> = {};
@@ -47,5 +57,5 @@ export const useProductApi = () => {
     return data;
   };
 
-  return { searchProducts, addProduct };
+  return { searchProducts, getProduct, addProduct };
 };
