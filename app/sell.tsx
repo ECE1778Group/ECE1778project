@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from "react";
-import { View, Text, TextInput, Pressable, StyleSheet, Alert, Image, ScrollView } from "react-native";
+import React, { useMemo, useRef, useState, useEffect } from "react";
+import { View, Text, TextInput, Pressable, StyleSheet, Alert, Image, ScrollView, Modal, Animated, PanResponder } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import { globalStyles } from "../styles/globalStyles";
@@ -7,7 +7,7 @@ import { colors } from "../styles/colors";
 import { ItemKind } from "../types";
 import { useAuth } from "../contexts/AuthContext";
 import { useProductApi } from "../lib/api/product";
-import { Plus, X } from "lucide-react-native";
+import { Plus, X, Camera, Image as ImageIcon } from "lucide-react-native";
 
 export default function Sell() {
   const router = useRouter();
@@ -23,6 +23,10 @@ export default function Sell() {
   const [category, setCategory] = useState("");
   const [stock, setStock] = useState<string>("1");
   const [images, setImages] = useState<string[]>([]);
+
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const fade = useRef(new Animated.Value(0)).current;
+  const sheetY = useRef(new Animated.Value(300)).current;
 
   const canSubmit = useMemo(() => {
     const p = Number(price);
@@ -42,9 +46,9 @@ export default function Sell() {
     return extras.join("\n") || "";
   };
 
-  const pickImages = async () => {
+  const pickFromLibrary = async () => {
     const res = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: 'images',
       allowsEditing: false,
       quality: 0.9,
       allowsMultipleSelection: true,
@@ -59,6 +63,66 @@ export default function Sell() {
       });
     }
   };
+
+  const pickFromCamera = async () => {
+    const perm = await ImagePicker.requestCameraPermissionsAsync();
+    if (!perm.granted) {
+      Alert.alert("Permission required", "Please enable camera access to take photos.");
+      return;
+    }
+    const res = await ImagePicker.launchCameraAsync({
+      mediaTypes: 'images',
+      allowsEditing: false,
+      quality: 0.9,
+    });
+    if (!res.canceled && res.assets?.[0]?.uri) {
+      const uri = res.assets[0].uri;
+      setImages(prev => Array.from(new Set([...prev, uri])));
+    }
+  };
+
+  const openPickerSheet = () => {
+    setPickerOpen(true);
+    fade.setValue(0);
+    sheetY.setValue(300);
+    Animated.parallel([
+      Animated.timing(fade, { toValue: 1, duration: 180, useNativeDriver: true }),
+      Animated.timing(sheetY, { toValue: 0, duration: 220, useNativeDriver: true }),
+    ]).start();
+  };
+
+  const closePickerSheet = (cb?: () => void) => {
+    Animated.parallel([
+      Animated.timing(fade, { toValue: 0, duration: 160, useNativeDriver: true }),
+      Animated.timing(sheetY, { toValue: 300, duration: 200, useNativeDriver: true }),
+    ]).start(({ finished }) => {
+      if (finished) {
+        setPickerOpen(false);
+        if (cb) cb();
+      }
+    });
+  };
+
+  const drag = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dy) > 6,
+      onPanResponderMove: (_, g) => {
+        if (g.dy > 0) {
+          sheetY.setValue(g.dy);
+        } else {
+          sheetY.setValue(0);
+        }
+      },
+      onPanResponderRelease: (_, g) => {
+        if (g.dy > 80 || g.vy > 0.8) {
+          closePickerSheet();
+        } else {
+          Animated.timing(sheetY, { toValue: 0, duration: 180, useNativeDriver: true }).start();
+        }
+      },
+    })
+  ).current;
 
   const removeImage = (uri: string) => {
     setImages(prev => prev.filter(u => u !== uri));
@@ -75,18 +139,9 @@ export default function Sell() {
       form.append("seller_username", user?.username || "anonymous");
       form.append("price", String(Number(price)));
       form.append("quantity", String(Number(stock || "1")));
-
       if (images[0]) {
-        const name = images[0].split("/").pop() || "image.jpg";
-        const type = name.toLowerCase().endsWith(".png") ? "image/png" : "image/jpeg";
-        form.append("picture", { uri: images[0], name, type } as any);
+        form.append("picture_url", images[0]);
       }
-
-      // if (images[0]) {
-      //   const name = images[0].split("/").pop() || "image.jpg";
-      //   const type = name.toLowerCase().endsWith(".png") ? "image/png" : "image/jpeg";
-      //   form.append("picture", { uri: images[0], name, type } as any);
-      // }
 
       await addProduct(form);
       Alert.alert("Listed", "Your item has been created.");
@@ -95,6 +150,13 @@ export default function Sell() {
       Alert.alert("Failed", e?.message || "Unable to create item.");
     }
   };
+
+  useEffect(() => {
+    return () => {
+      fade.stopAnimation();
+      sheetY.stopAnimation();
+    };
+  }, []);
 
   return (
     <View style={[globalStyles.container, { paddingHorizontal: 16, paddingTop: 12 }]}>
@@ -206,7 +268,7 @@ export default function Sell() {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.gallery}
         >
-          <Pressable style={styles.addBox} onPress={pickImages} accessibilityRole="button" accessibilityLabel="Add photos">
+          <Pressable style={styles.addBox} onPress={openPickerSheet} accessibilityRole="button" accessibilityLabel="Add photos">
             <Plus size={28} color={colors.placeholder} />
           </Pressable>
 
@@ -234,6 +296,26 @@ export default function Sell() {
       >
         <Text style={styles.primaryText}>List Item</Text>
       </Pressable>
+
+      <Modal visible={pickerOpen} transparent animationType="none" onRequestClose={() => closePickerSheet()}>
+        <Animated.View style={[styles.backdrop, { opacity: fade }]}>
+          <Pressable style={StyleSheet.absoluteFill} onPress={() => closePickerSheet()}/>
+        </Animated.View>
+        <Animated.View style={[styles.sheet, { transform: [{ translateY: sheetY }] }]}>
+          <View style={styles.sheetGrab} {...drag.panHandlers}>
+            <View style={styles.sheetHandle}/>
+          </View>
+          <Text style={styles.sheetTitle}>Add Photo</Text>
+          <Pressable style={styles.sheetAction} onPress={() => closePickerSheet(pickFromCamera)} accessibilityRole="button" accessibilityLabel="Open camera">
+            <Camera size={18} color={colors.textPrimary} />
+            <Text style={styles.sheetActionLabel}>Camera</Text>
+          </Pressable>
+          <Pressable style={styles.sheetAction} onPress={() => closePickerSheet(pickFromLibrary)} accessibilityRole="button" accessibilityLabel="Open photo library">
+            <ImageIcon size={18} color={colors.textPrimary} />
+            <Text style={styles.sheetActionLabel}>Photo Library</Text>
+          </Pressable>
+        </Animated.View>
+      </Modal>
     </View>
   );
 }
@@ -346,5 +428,58 @@ const styles = StyleSheet.create({
   },
   disabled: {
     opacity: 0.6,
+  },
+  backdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.3)",
+  },
+  sheet: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: colors.white,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 20,
+    borderTopWidth: 1,
+    borderColor: colors.border,
+  },
+  sheetGrab: {
+    paddingTop: 4,
+    paddingBottom: 8,
+    alignItems: "center",
+  },
+  sheetHandle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: colors.border,
+    marginBottom: 4,
+  },
+  sheetTitle: {
+    color: colors.textPrimary,
+    fontSize: 16,
+    fontWeight: "700",
+    marginBottom: 8,
+  },
+  sheetAction: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    backgroundColor: colors.white,
+    borderColor: colors.border,
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    marginTop: 8,
+  },
+  sheetActionLabel: {
+    color: colors.textPrimary,
+    fontSize: 14,
+    fontWeight: "600",
   },
 });
