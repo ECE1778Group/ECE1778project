@@ -8,7 +8,7 @@ import {MarketplaceItem} from "../../types";
 import {useCart} from "../../contexts/CartContext";
 import {ShoppingCart} from "lucide-react-native";
 import {useProductApi} from "../../lib/api/product";
-import {BASE_URL} from "../../constant";
+import {IMAGE_URL_PREFIX} from "../../constant";
 
 type LocalItem = MarketplaceItem & { description?: string };
 
@@ -28,42 +28,53 @@ export default function ItemDetail() {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
+  const reqVer = useRef(0);
+
   useEffect(() => {
     let cancelled = false;
+    const current = ++reqVer.current;
+
+    setLoading(true);
+    setNotFound(false);
+
     (async () => {
-      setLoading(true);
-      setNotFound(false);
       const dto = await getProduct(String(id));
-      if (cancelled) return;
+      if (cancelled || current !== reqVer.current) return;
+
       if (!dto) {
-        setNotFound(true);
         setItem(null);
-      } else {
-        const cat = String(dto.category ?? "").toLowerCase();
-        const isBook = cat.includes("book");
-        let picture = dto.picture_url || "";
-        if (picture && !/^https?:\/\//i.test(picture)) {
-          picture = `${BASE_URL}/${picture.replace(/^\/+/, "")}`;
-        }
-        const mapped: LocalItem = {
-          id: String(dto.id),
-          kind: isBook ? "book" : "other",
-          title: String(dto.title),
-          price: Number(dto.price) || 0,
-          imageUrl: picture || undefined,
-          distanceKm: undefined,
-          courseCode: undefined,
-          createdAt: undefined,
-          stock: typeof dto.quantity === "number" ? dto.quantity : undefined,
-          category: isBook ? undefined : (dto.category as string | undefined),
-          authors: undefined,
-          isbn: undefined,
-          description: dto.description || undefined,
-        };
-        setItem(mapped);
+        setNotFound(true);
+        setLoading(false);
+        return;
       }
+
+      const cat = String(dto.category ?? "").toLowerCase();
+      const isBook = cat.includes("book");
+      let picture = dto.picture_url || "";
+      if (picture && !/^https?:\/\//i.test(picture)) {
+        picture = IMAGE_URL_PREFIX + picture.replace(/^\/+/, "");
+      }
+
+      const mapped: LocalItem = {
+        id: String(dto.id),
+        kind: isBook ? "book" : "other",
+        title: String(dto.title),
+        price: Number(dto.price) || 0,
+        imageUrl: picture || undefined,
+        distanceKm: undefined,
+        courseCode: undefined,
+        createdAt: undefined,
+        stock: typeof dto.quantity === "number" ? dto.quantity : undefined,
+        category: isBook ? undefined : (dto.category as string | undefined),
+        authors: undefined,
+        isbn: undefined,
+        description: dto.description || undefined,
+      };
+
+      setItem(mapped);
       setLoading(false);
     })();
+
     return () => {
       cancelled = true;
     };

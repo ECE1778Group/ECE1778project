@@ -114,7 +114,7 @@ services:
       - release
     container_name: nginx
     ports:
-      - "8081:80/tcp"
+      - "8090:80/tcp"
     volumes:
       - ./:/usr/share/nginx/html:ro
     networks:
