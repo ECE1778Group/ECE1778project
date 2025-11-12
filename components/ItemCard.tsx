@@ -3,6 +3,7 @@ import React, {useMemo} from "react";
 import {Image, Pressable, StyleSheet, Text, View} from "react-native";
 import {useRouter} from "expo-router";
 import {colors} from "../styles/colors";
+import {IMAGE_URL_PREFIX} from "../constant";
 
 export type ItemCardProps = {
   id: string;
@@ -38,6 +39,11 @@ export default function ItemCard(props: ItemCardProps) {
   const timeAgo = useMemo(() => formatTimeAgo(createdAt), [createdAt]);
   const priceText = useMemo(() => formatPrice(price), [price]);
   const distanceText = useMemo(() => (distanceKm != null ? `${distanceKm.toFixed(1)} km` : ""), [distanceKm]);
+  const displayUrl = useMemo(() => {
+    if (!imageUrl) return undefined;
+    if (/^https?:\/\//i.test(imageUrl)) return imageUrl;
+    return IMAGE_URL_PREFIX + imageUrl.replace(/^\/+/, "");
+  }, [imageUrl]);
 
   const handlePress = () => {
     if (onPress) onPress();
@@ -49,8 +55,8 @@ export default function ItemCard(props: ItemCardProps) {
                accessibilityRole="button">
       <View style={styles.row}>
         <View style={styles.media}>
-          {imageUrl ? (
-            <Image source={{uri: imageUrl}} style={styles.image} resizeMode="cover"/>
+          {displayUrl ? (
+            <Image source={{uri: displayUrl}} style={styles.image} resizeMode="cover"/>
           ) : (
             <View style={styles.imagePlaceholder}>
               <Text style={styles.imagePlaceholderText}>No Image</Text>
