@@ -8,6 +8,9 @@ import {MarketplaceItem} from "../../types";
 import {useCart} from "../../contexts/CartContext";
 import {ShoppingCart} from "lucide-react-native";
 import {useProductApi} from "../../lib/api/product";
+import {BASE_URL} from "../../constant";
+
+type LocalItem = MarketplaceItem & { description?: string };
 
 function formatPrice(n: number) {
   if (!isFinite(n)) return "";
@@ -21,7 +24,7 @@ export default function ItemDetail() {
   const {add, count} = useCart();
   const {getProduct} = useProductApi();
 
-  const [item, setItem] = useState<MarketplaceItem | null>(null);
+  const [item, setItem] = useState<LocalItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
@@ -38,12 +41,16 @@ export default function ItemDetail() {
       } else {
         const cat = String(dto.category ?? "").toLowerCase();
         const isBook = cat.includes("book");
-        const mapped: MarketplaceItem = {
+        let picture = dto.picture_url || "";
+        if (picture && !/^https?:\/\//i.test(picture)) {
+          picture = `${BASE_URL}/${picture.replace(/^\/+/, "")}`;
+        }
+        const mapped: LocalItem = {
           id: String(dto.id),
           kind: isBook ? "book" : "other",
           title: String(dto.title),
           price: Number(dto.price) || 0,
-          imageUrl: dto.picture_url || undefined,
+          imageUrl: picture || undefined,
           distanceKm: undefined,
           courseCode: undefined,
           createdAt: undefined,
@@ -51,6 +58,7 @@ export default function ItemDetail() {
           category: isBook ? undefined : (dto.category as string | undefined),
           authors: undefined,
           isbn: undefined,
+          description: dto.description || undefined,
         };
         setItem(mapped);
       }
@@ -161,7 +169,7 @@ export default function ItemDetail() {
         </View>
 
         <Text style={styles.sectionTitle}>Details</Text>
-        <Text style={styles.bodyText}></Text>
+        <Text style={styles.bodyText}>{item.description || "No description"}</Text>
       </ScrollView>
 
       {flyVisible && flyUri ? (
