@@ -27,8 +27,8 @@ export default function Sell() {
   const canSubmit = useMemo(() => {
     const p = Number(price);
     const s = Number(stock || "1");
-    return title.trim().length > 0 && !Number.isNaN(p) && p >= 0 && !Number.isNaN(s) && s >= 1;
-  }, [title, price, stock]);
+    return title.trim().length > 0 && !Number.isNaN(p) && p >= 0 && !Number.isNaN(s) && s >= 1 && images.length > 0;
+  }, [title, price, stock, images]);
 
   const buildDescription = () => {
     const extras: string[] = [];
@@ -193,30 +193,33 @@ export default function Sell() {
         </View>
       )}
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.gallery}
-      >
-        <Pressable style={styles.addBox} onPress={pickImages} accessibilityRole="button" accessibilityLabel="Add photos">
-          <Plus size={28} color={colors.placeholder} />
-        </Pressable>
+      <View style={styles.field}>
+        <Text style={styles.label}>Image</Text>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.gallery}
+        >
+          <Pressable style={styles.addBox} onPress={pickImages} accessibilityRole="button" accessibilityLabel="Add photos">
+            <Plus size={28} color={colors.placeholder} />
+          </Pressable>
 
-        {images.map((uri) => (
-          <View key={uri} style={styles.photoWrap}>
-            <Image source={{ uri }} style={styles.photo} />
-            <Pressable
-              onPress={() => removeImage(uri)}
-              hitSlop={10}
-              style={styles.removeBtn}
-              accessibilityRole="button"
-              accessibilityLabel="Remove photo"
-            >
-              <X size={12} color={colors.textPrimary} />
-            </Pressable>
-          </View>
-        ))}
-      </ScrollView>
+          {images.map((uri) => (
+            <View key={uri} style={styles.photoWrap}>
+              <Image source={{ uri }} style={styles.photo} />
+              <Pressable
+                onPress={() => removeImage(uri)}
+                hitSlop={10}
+                style={styles.removeBtn}
+                accessibilityRole="button"
+                accessibilityLabel="Remove photo"
+              >
+                <X size={12} color={colors.textPrimary} />
+              </Pressable>
+            </View>
+          ))}
+        </ScrollView>
+      </View>
 
       <Pressable
         style={[styles.primaryBtn, !canSubmit && styles.disabled]}
