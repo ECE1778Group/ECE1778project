@@ -1,12 +1,17 @@
 import React, { useMemo, useState } from "react";
-import { View, Text, TextInput, Pressable, StyleSheet, Alert } from "react-native";
+import { View, Text, TextInput, Pressable, StyleSheet, Alert, Image } from "react-native";
+import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import { globalStyles } from "../styles/globalStyles";
 import { colors } from "../styles/colors";
-import { ItemKind, MarketplaceItem } from "../types";
+import { ItemKind } from "../types";
+import { useAuth } from "../contexts/AuthContext";
+import { useProductApi } from "../lib/api/product";
 
 export default function Sell() {
   const router = useRouter();
+  const { user } = useAuth();
+  const { addProduct } = useProductApi();
 
   const [kind, setKind] = useState<ItemKind>("book");
   const [title, setTitle] = useState("");
@@ -17,48 +22,62 @@ export default function Sell() {
   const [authors, setAuthors] = useState("");
   const [category, setCategory] = useState("");
   const [stock, setStock] = useState<string>("1");
+  const [pickedUri, setPickedUri] = useState<string | null>(null);
 
   const canSubmit = useMemo(() => {
     const p = Number(price);
     const s = Number(stock || "1");
-    return title.trim().length > 0 && !Number.isNaN(p) && p >= 0 && !Number.isNaN(s) && s >= 1;
-  }, [title, price, stock]);
+    return title.trim().length > 0 && !Number.isNaN(p) && p >= 0 && !Number.isNaN(s) && s >= 1 && !!pickedUri;
+  }, [title, price, stock, pickedUri]);
 
-  const submit = () => {
+  const buildDescription = () => {
+    const extras: string[] = [];
+    if (kind === "book") {
+      if (isbn.trim()) extras.push(`ISBN:${isbn.trim()}`);
+      if (authors.trim()) extras.push(`Authors:${authors.split(",").map((x) => x.trim()).filter(Boolean).join(", ")}`);
+      if (courseCode.trim()) extras.push(`Course:${courseCode.trim()}`);
+    } else {
+      if (category.trim()) extras.push(`Category:${category.trim()}`);
+    }
+    if (imageUrl.trim()) extras.push(`ImageURL:${imageUrl.trim()}`);
+    return extras.join("\n") || "";
+  };
+
+  const pickImage = async () => {
+    const res = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: false,
+      quality: 0.9,
+    });
+    if (!res.canceled && res.assets && res.assets[0]?.uri) {
+      setPickedUri(res.assets[0].uri);
+    }
+  };
+
+  const submit = async () => {
     if (!canSubmit) return;
 
-    const id = Date.now().toString();
-    const base = {
-      id,
-      title: title.trim(),
-      price: Number(price),
-      imageUrl: imageUrl.trim() || undefined,
-      courseCode: courseCode.trim() || undefined,
-      stock: Number(stock || "1"),
-      createdAt: new Date().toISOString(),
-    };
+    try {
+      const form = new FormData();
+      form.append("title", title.trim());
+      form.append("description", buildDescription());
+      form.append("category", kind === "book" ? "book" : category.trim() || "other");
+      form.append("seller_username", user?.username || "anonymous");
+      form.append("price", String(Number(price)));
+      form.append("quantity", String(Number(stock || "1")));
 
-    let draft: MarketplaceItem;
-    if (kind === "book") {
-      draft = {
-        ...base,
-        kind: "book",
-        isbn: isbn.trim() || undefined,
-        authors: authors
-          .split(",")
-          .map((s) => s.trim())
-          .filter(Boolean),
-      };
-    } else {
-      draft = {
-        ...base,
-        kind: "other",
-        category: category.trim() || undefined,
-      };
+      if (pickedUri) {
+        const name = pickedUri.split("/").pop() || "image.jpg";
+        const type = name.toLowerCase().endsWith(".png") ? "image/png" : "image/jpeg";
+        form.append("picture", { uri: pickedUri, name, type } as any);
+      }
+
+      await addProduct(form);
+      Alert.alert("Listed", "Your item has been created.");
+      router.push("/");
+    } catch (e: any) {
+      Alert.alert("Failed", e?.message || "Unable to create item.");
     }
-
-    Alert.alert("Listed (mock)", "Your item would appear in Market after backend integration.");
-    router.push("/");
   };
 
   return (
@@ -176,6 +195,16 @@ export default function Sell() {
         />
       </View>
 
+      <Pressable style={styles.pickBtn} onPress={pickImage}>
+        <Text style={styles.pickText}>{pickedUri ? "Change Photo" : "Pick Photo"}</Text>
+      </Pressable>
+
+      {pickedUri ? (
+        <View style={{ alignItems: "center", marginTop: 8, marginBottom: 4 }}>
+          <Image source={{ uri: pickedUri }} style={{ width: 120, height: 120, borderRadius: 10 }} />
+        </View>
+      ) : null}
+
       <Pressable
         style={[styles.primaryBtn, !canSubmit && styles.disabled]}
         disabled={!canSubmit}
@@ -238,6 +267,19 @@ const styles = StyleSheet.create({
   },
   row: {
     flexDirection: "row",
+  },
+  pickBtn: {
+    backgroundColor: colors.white,
+    borderColor: colors.border,
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingVertical: 10,
+    alignItems: "center",
+  },
+  pickText: {
+    color: colors.textPrimary,
+    fontSize: 14,
+    fontWeight: "600",
   },
   primaryBtn: {
     backgroundColor: colors.primary,

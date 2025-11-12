@@ -1,4 +1,6 @@
 import { useFetch } from "./fetch-client";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { BASE_URL } from "../../constant";
 
 type ProductDTO = {
   id: string;
@@ -26,5 +28,24 @@ export const useProductApi = () => {
     }
   };
 
-  return { searchProducts };
+  const addProduct = async (form: FormData) => {
+    const token = await AsyncStorage.getItem("access");
+    const headers: Record<string, string> = {};
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+    const res = await fetch(`${BASE_URL}/api/product/`, {
+      method: "POST",
+      headers,
+      body: form,
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      const msg = data?.error || data?.message || "Request failed";
+      const err: any = new Error(msg);
+      (err.status = res.status);
+      throw err;
+    }
+    return data;
+  };
+
+  return { searchProducts, addProduct };
 };

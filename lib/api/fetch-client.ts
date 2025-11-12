@@ -1,7 +1,6 @@
 // lib/api/fetch-client.ts
 import { useState, useCallback } from "react";
-
-const BASE_URL = "http://localhost:8000"; 
+import { BASE_URL } from "../../constant";
 
 export const useFetch = () => {
   const [loading, setLoading] = useState(false);
