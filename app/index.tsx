@@ -1,4 +1,4 @@
-import React, {useCallback, useState} from "react";
+import React, {useCallback, useEffect, useState} from "react";
 import {FlatList, Pressable, StyleSheet, Text, TextInput, View} from "react-native";
 import {useRouter} from "expo-router";
 import ItemCard from "../components/ItemCard";
@@ -35,6 +35,23 @@ export default function Market() {
       isbn: undefined,
     } as MarketplaceItem;
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await searchProducts("all");
+        if (!cancelled) setData((res || []).map(mapToItem));
+      } catch {
+        if (!cancelled) setData([]);
+      } finally {
+        if (!cancelled) setHasSearched(true);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [searchProducts, mapToItem]);
 
   const handleSearch = useCallback(async () => {
     const q = text.trim();
