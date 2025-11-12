@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { View, Text, TextInput, Pressable, StyleSheet, Alert, Image } from "react-native";
+import { View, Text, TextInput, Pressable, StyleSheet, Alert, Image, ScrollView } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import { globalStyles } from "../styles/globalStyles";
@@ -7,6 +7,7 @@ import { colors } from "../styles/colors";
 import { ItemKind } from "../types";
 import { useAuth } from "../contexts/AuthContext";
 import { useProductApi } from "../lib/api/product";
+import { Plus, X } from "lucide-react-native";
 
 export default function Sell() {
   const router = useRouter();
@@ -16,19 +17,18 @@ export default function Sell() {
   const [kind, setKind] = useState<ItemKind>("book");
   const [title, setTitle] = useState("");
   const [price, setPrice] = useState<string>("");
-  const [imageUrl, setImageUrl] = useState("");
   const [courseCode, setCourseCode] = useState("");
   const [isbn, setIsbn] = useState("");
   const [authors, setAuthors] = useState("");
   const [category, setCategory] = useState("");
   const [stock, setStock] = useState<string>("1");
-  const [pickedUri, setPickedUri] = useState<string | null>(null);
+  const [images, setImages] = useState<string[]>([]);
 
   const canSubmit = useMemo(() => {
     const p = Number(price);
     const s = Number(stock || "1");
-    return title.trim().length > 0 && !Number.isNaN(p) && p >= 0 && !Number.isNaN(s) && s >= 1 && !!pickedUri;
-  }, [title, price, stock, pickedUri]);
+    return title.trim().length > 0 && !Number.isNaN(p) && p >= 0 && !Number.isNaN(s) && s >= 1;
+  }, [title, price, stock]);
 
   const buildDescription = () => {
     const extras: string[] = [];
@@ -39,19 +39,29 @@ export default function Sell() {
     } else {
       if (category.trim()) extras.push(`Category:${category.trim()}`);
     }
-    if (imageUrl.trim()) extras.push(`ImageURL:${imageUrl.trim()}`);
     return extras.join("\n") || "";
   };
 
-  const pickImage = async () => {
+  const pickImages = async () => {
     const res = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: false,
       quality: 0.9,
+      allowsMultipleSelection: true,
+      selectionLimit: 10,
     });
-    if (!res.canceled && res.assets && res.assets[0]?.uri) {
-      setPickedUri(res.assets[0].uri);
+    if (!res.canceled && res.assets?.length) {
+      const uris = res.assets.map(a => a.uri).filter(Boolean) as string[];
+      setImages(prev => {
+        const s = new Set(prev);
+        uris.forEach(u => s.add(u));
+        return Array.from(s);
+      });
     }
+  };
+
+  const removeImage = (uri: string) => {
+    setImages(prev => prev.filter(u => u !== uri));
   };
 
   const submit = async () => {
@@ -66,10 +76,10 @@ export default function Sell() {
       form.append("price", String(Number(price)));
       form.append("quantity", String(Number(stock || "1")));
 
-      if (pickedUri) {
-        const name = pickedUri.split("/").pop() || "image.jpg";
+      if (images[0]) {
+        const name = images[0].split("/").pop() || "image.jpg";
         const type = name.toLowerCase().endsWith(".png") ? "image/png" : "image/jpeg";
-        form.append("picture", { uri: pickedUri, name, type } as any);
+        form.append("picture", { uri: images[0], name, type } as any);
       }
 
       await addProduct(form);
@@ -183,27 +193,30 @@ export default function Sell() {
         </View>
       )}
 
-      <View style={styles.field}>
-        <Text style={styles.label}>Image URL (optional)</Text>
-        <TextInput
-          style={styles.input}
-          value={imageUrl}
-          onChangeText={setImageUrl}
-          autoCapitalize="none"
-          placeholder="https://…"
-          placeholderTextColor={colors.placeholder}
-        />
-      </View>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.gallery}
+      >
+        <Pressable style={styles.addBox} onPress={pickImages} accessibilityRole="button" accessibilityLabel="Add photos">
+          <Plus size={28} color={colors.placeholder} />
+        </Pressable>
 
-      <Pressable style={styles.pickBtn} onPress={pickImage}>
-        <Text style={styles.pickText}>{pickedUri ? "Change Photo" : "Pick Photo"}</Text>
-      </Pressable>
-
-      {pickedUri ? (
-        <View style={{ alignItems: "center", marginTop: 8, marginBottom: 4 }}>
-          <Image source={{ uri: pickedUri }} style={{ width: 120, height: 120, borderRadius: 10 }} />
-        </View>
-      ) : null}
+        {images.map((uri) => (
+          <View key={uri} style={styles.photoWrap}>
+            <Image source={{ uri }} style={styles.photo} />
+            <Pressable
+              onPress={() => removeImage(uri)}
+              hitSlop={10}
+              style={styles.removeBtn}
+              accessibilityRole="button"
+              accessibilityLabel="Remove photo"
+            >
+              <X size={12} color={colors.textPrimary} />
+            </Pressable>
+          </View>
+        ))}
+      </ScrollView>
 
       <Pressable
         style={[styles.primaryBtn, !canSubmit && styles.disabled]}
@@ -268,18 +281,47 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
   },
-  pickBtn: {
+  gallery: {
+    paddingVertical: 6,
+    gap: 10,
+  },
+  addBox: {
+    width: 96,
+    height: 96,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderStyle: "dashed",
+    borderColor: colors.border,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.white,
+  },
+  photoWrap: {
+    width: 96,
+    height: 96,
+    borderRadius: 10,
+    overflow: "hidden",
+    position: "relative",
     backgroundColor: colors.white,
     borderColor: colors.border,
     borderWidth: 1,
-    borderRadius: 10,
-    paddingVertical: 10,
-    alignItems: "center",
   },
-  pickText: {
-    color: colors.textPrimary,
-    fontSize: 14,
-    fontWeight: "600",
+  photo: {
+    width: "100%",
+    height: "100%",
+  },
+  removeBtn: {
+    position: "absolute",
+    top: 4,
+    right: 4,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: colors.white,
+    borderColor: colors.border,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
   },
   primaryBtn: {
     backgroundColor: colors.primary,
