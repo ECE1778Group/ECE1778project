@@ -10,31 +10,35 @@ logger = logging.getLogger(__name__)
 
 
 def list_products_by_keyword(keyword: str, sort_field: str = "price", sort_order: str = "desc") -> list[dict]:
-    es: Elasticsearch = get_es_client()
-    try:
-        es_result = es.search(index="product", size=20, query={
-            "bool": {
-                "must": [
-                    {
-                        "multi_match": {
-                            "query": keyword,
-                            "fields": [
-                                "title^3",
-                                "description^1",
-                                "category^2",
-                            ],
-                            "type": "best_fields",
-                            "fuzziness": "AUTO",
-                        }
-                    }
-                ],
-                "filter": [
-                    {"range": {"quantity": {"gt": 0}}}
-                ],
+    if keyword != "all":
+        query_part = {
+            "multi_match": {
+                "query": keyword,
+                "fields": ["title^3", "description^1", "category^2"],
+                "type": "best_fields",
+                "fuzziness": "AUTO",
             }
-        }, sort=[{sort_field: {"order": sort_order}}])
+        }
+    else:
+        query_part = {"match_all": {}}
+    query = {
+        "bool": {
+            "must": [query_part],
+            "filter": [
+                {"range": {"quantity": {"gt": 0}}}
+            ],
+        }
+    }
+
+    es: Elasticsearch = get_es_client()
+
+    try:
+        es_result = es.search(index="product", size=20, query=query, sort=[{sort_field: {"order": sort_order}}])
     except NotFoundError:
         return []
+    logger.info("executed query")
+    logger.info(query)
+    logger.info("got result")
     logger.info(es_result)
     hits = es_result.get("hits", {}).get("hits", [])
     products = []

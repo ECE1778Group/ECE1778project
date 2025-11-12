@@ -36,8 +36,8 @@ services:
     healthcheck:
       test: curl -fs http://localhost:9200/_cluster/health  | grep green
       interval: 2s
-      timeout: 20s
-      retries: 10
+      timeout: 30s
+      retries: 15
 
 
   # for visualize data in elasticsearch only
