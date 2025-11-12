@@ -82,6 +82,12 @@ export default function Sell() {
         form.append("picture", { uri: images[0], name, type } as any);
       }
 
+      // if (images[0]) {
+      //   const name = images[0].split("/").pop() || "image.jpg";
+      //   const type = name.toLowerCase().endsWith(".png") ? "image/png" : "image/jpeg";
+      //   form.append("picture", { uri: images[0], name, type } as any);
+      // }
+
       await addProduct(form);
       Alert.alert("Listed", "Your item has been created.");
       router.push("/");
