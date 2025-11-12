@@ -1,18 +1,54 @@
-import React, {useMemo} from "react";
-import {FlatList, Pressable, StyleSheet, Text, View} from "react-native";
+import React, {useMemo, useState} from "react";
+import {FlatList, Pressable, StyleSheet, Text, View, Alert} from "react-native";
 import {globalStyles} from "../styles/globalStyles";
 import {colors} from "../styles/colors";
 import CartItem from "../components/CartItemCard";
 import {useCart} from "../contexts/CartContext";
+import {useAuth} from "../contexts/AuthContext";
+import {useOrderApi} from "../lib/api/order";
 
 export default function Cart() {
   const {entries, changeQuantity, remove, clear, total} = useCart();
+  const {user} = useAuth();
+  const {createOrder} = useOrderApi();
+
+  const [placing, setPlacing] = useState(false);
 
   const hasItems = entries.length > 0;
   const totalText = useMemo(() => {
     if (total <= 0) return "$0";
     return `$${total.toFixed(total % 1 === 0 ? 0 : 2)}`;
   }, [total]);
+
+  const checkout = async () => {
+    if (!hasItems || placing) return;
+    try {
+      setPlacing(true);
+      const payloadItems = entries.map((e) => ({
+        product_id: e.id,
+        quantity: e.quantity,
+      }));
+      const resp = await createOrder({
+        items: payloadItems,
+        customer_username: user?.username || "Guest",
+      });
+      const totalDisplay =
+        typeof resp?.total_amount === "number"
+          ? `$${Number(resp.total_amount).toFixed(
+              Number(resp.total_amount) % 1 === 0 ? 0 : 2
+            )}`
+          : "";
+      Alert.alert(
+        "Order Placed",
+        `Order #: ${resp.order_number}\nTotal: ${totalDisplay}`
+      );
+      clear();
+    } catch (err: any) {
+      Alert.alert("Checkout failed", err?.message || "Unable to create order.");
+    } finally {
+      setPlacing(false);
+    }
+  };
 
   return (
     <View style={globalStyles.container}>
@@ -40,9 +76,12 @@ export default function Cart() {
             <Pressable style={styles.clearBtn} onPress={clear}>
               <Text style={styles.clearText}>Clear</Text>
             </Pressable>
-            <Pressable style={styles.checkoutBtn} onPress={() => {
-            }}>
-              <Text style={styles.checkoutText}>Checkout</Text>
+            <Pressable
+              style={[styles.checkoutBtn, (!hasItems || placing) && styles.checkoutBtnDisabled]}
+              onPress={checkout}
+              disabled={!hasItems || placing}
+            >
+              <Text style={styles.checkoutText}>{placing ? "Placing..." : "Checkout"}</Text>
             </Pressable>
           </View>
         </>
@@ -94,6 +133,9 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingHorizontal: 16,
     paddingVertical: 12,
+  },
+  checkoutBtnDisabled: {
+    opacity: 0.6,
   },
   checkoutText: {
     color: colors.white,
