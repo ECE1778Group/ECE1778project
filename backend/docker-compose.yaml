@@ -107,6 +107,19 @@ services:
     environment:
       - PMA_ARBITRARY=1
 
+  nginx:
+    image: nginx:1.29
+    profiles:
+      - dev
+      - release
+    container_name: nginx
+    ports:
+      - "8081:80/tcp"
+    volumes:
+      - ./:/usr/share/nginx/html:ro
+    networks:
+      - backend-network
+
 
 
 networks:
