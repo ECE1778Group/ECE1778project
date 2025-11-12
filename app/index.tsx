@@ -1,5 +1,5 @@
-import React, {useMemo, useState} from "react";
-import {FlatList, Pressable, StyleSheet, TextInput, View} from "react-native";
+import React, {useCallback, useState} from "react";
+import {FlatList, Pressable, StyleSheet, Text, TextInput, View} from "react-native";
 import {useRouter} from "expo-router";
 import ItemCard from "../components/ItemCard";
 import {globalStyles} from "../styles/globalStyles";
@@ -7,53 +7,51 @@ import {colors} from "../styles/colors";
 import {ArrowDownWideNarrow, ShoppingCart} from "lucide-react-native";
 import {MarketplaceItem} from "../types";
 import {useCart} from "../contexts/CartContext";
-
-const items: MarketplaceItem[] = [
-  {
-    id: "1",
-    kind: "book",
-    title: "ECE472 Textbook (9th ed.)",
-    price: 45,
-    imageUrl: "https://picsum.photos/seed/ece472/200/200",
-    distanceKm: 0.7,
-    courseCode: "ECE472",
-    createdAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
-    isbn: "978-1-23456-789-7",
-    authors: ["A. Author"],
-  },
-  {
-    id: "2",
-    kind: "book",
-    title: "Linear Algebra Notes Bundle",
-    price: 10,
-    imageUrl: "https://picsum.photos/seed/la/200/200",
-    distanceKm: 1.3,
-    courseCode: "MAT223",
-    createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
-  },
-  {
-    id: "3",
-    kind: "other",
-    title: "Dorm Lamp",
-    price: 0,
-    imageUrl: "https://picsum.photos/seed/lamp/200/200",
-    distanceKm: 0.3,
-    courseCode: "",
-    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-    category: "home",
-  },
-];
+import {useProductApi} from "../lib/api/product";
 
 export default function Market() {
   const [text, setText] = useState("");
+  const [data, setData] = useState<MarketplaceItem[]>([]);
+  const [hasSearched, setHasSearched] = useState(false);
   const router = useRouter();
   const {count} = useCart();
+  const {searchProducts} = useProductApi();
 
-  const data = useMemo(() => {
-    const q = text.trim().toLowerCase();
-    if (!q) return items;
-    return items.filter((it) => it.title.toLowerCase().includes(q));
-  }, [text]);
+  const mapToItem = useCallback((p: any): MarketplaceItem => {
+    const cat = String(p?.category ?? "").toLowerCase();
+    const isBook = cat.includes("book");
+    return {
+      id: String(p.id),
+      kind: isBook ? "book" : "other",
+      title: String(p.title),
+      price: Number(p.price) || 0,
+      imageUrl: p.picture_url || undefined,
+      distanceKm: undefined,
+      courseCode: undefined,
+      createdAt: undefined,
+      stock: typeof p.quantity === "number" ? p.quantity : undefined,
+      category: isBook ? undefined : (p.category as string | undefined),
+      authors: undefined,
+      isbn: undefined,
+    } as MarketplaceItem;
+  }, []);
+
+  const handleSearch = useCallback(async () => {
+    const q = text.trim();
+    if (!q) {
+      setData([]);
+      setHasSearched(true);
+      return;
+    }
+    try {
+      const res = await searchProducts(q);
+      setData((res || []).map(mapToItem));
+    } catch {
+      setData([]);
+    } finally {
+      setHasSearched(true);
+    }
+  }, [text, searchProducts, mapToItem]);
 
   const filled = count > 0;
 
@@ -66,33 +64,42 @@ export default function Market() {
         </Pressable>
         <TextInput
           style={styles.searchInput}
-          placeholder="Search by title"
+          placeholder="Search Items"
           placeholderTextColor={colors.placeholder}
           value={text}
           onChangeText={setText}
           returnKeyType="search"
           clearButtonMode="while-editing"
+          onSubmitEditing={handleSearch}
         />
       </View>
 
-      <FlatList
-        data={data}
-        keyExtractor={(item) => item.id}
-        renderItem={({item}) => (
-          <ItemCard
-            id={item.id}
-            title={item.title}
-            price={item.price}
-            imageUrl={item.imageUrl}
-            distanceKm={item.distanceKm}
-            courseCode={item.courseCode}
-            createdAt={item.createdAt}
-            onPress={() => router.push({pathname: "/item/[id]", params: {id: item.id}})}
-          />
-        )}
-        contentContainerStyle={{paddingVertical: 8, paddingBottom: 96}}
-        keyboardShouldPersistTaps="handled"
-      />
+      {hasSearched && data.length === 0 ? (
+        <View style={styles.emptyWrap}>
+          <Text style={[styles.emptyText, {color: (colors as any).textSecondary || colors.placeholder}]}>
+            No available items
+          </Text>
+        </View>
+      ) : (
+        <FlatList
+          data={data}
+          keyExtractor={(item) => item.id}
+          renderItem={({item}) => (
+            <ItemCard
+              id={item.id}
+              title={item.title}
+              price={item.price}
+              imageUrl={"imageUrl" in item ? item.imageUrl : undefined}
+              distanceKm={"distanceKm" in item ? item.distanceKm : undefined}
+              courseCode={"courseCode" in item ? item.courseCode : undefined}
+              createdAt={"createdAt" in item ? item.createdAt : undefined}
+              onPress={() => router.push({pathname: "/item/[id]", params: {id: item.id}})}
+            />
+          )}
+          contentContainerStyle={{paddingVertical: 8, paddingBottom: 96}}
+          keyboardShouldPersistTaps="handled"
+        />
+      )}
 
       <Pressable
         accessibilityRole="button"
@@ -135,6 +142,15 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 8,
+  },
+  emptyWrap: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 24,
+  },
+  emptyText: {
+    fontSize: 16,
   },
   fab: {
     position: "absolute",
