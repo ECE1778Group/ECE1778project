@@ -36,7 +36,7 @@ class OrderView(APIView):
         ser = OrderCreateRequestSerializer(data=request.data)
         ser.is_valid(raise_exception=True)
         items = ser.validated_data['items']
-        customer_username = ser.validated_data['customer_username']
+        customer_username = request.user.username
         seller_groups = defaultdict(list)
         total_amount = 0
 

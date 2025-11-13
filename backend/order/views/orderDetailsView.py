@@ -1,18 +1,20 @@
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema, OpenApiResponse
 from rest_framework import status
 from rest_framework.exceptions import NotFound
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from order import orderService
 from order.orderService import *
-from order.serializers import OrderSerializer, OrderItemSerializer, OrderDetailSerializer
+from order.serializers import OrderDetailSerializer
 
 logger = logging.getLogger(__name__)
 
 
 class OrderDetailsView(APIView):
+    permission_classes = [IsAuthenticated]
 
     @extend_schema(
         summary='get an order details',
@@ -20,6 +22,7 @@ class OrderDetailsView(APIView):
         responses={
             200: OrderDetailSerializer,
             404: NotFound,
+            401: OpenApiResponse(description='user not authenticated')
         },
     )
     def get(self, request: Request, order_number: str) -> Response:

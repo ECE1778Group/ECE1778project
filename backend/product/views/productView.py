@@ -4,6 +4,7 @@ import uuid
 from drf_spectacular.utils import extend_schema, OpenApiResponse
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -16,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 class ProductView(APIView):
+    permission_classes = [IsAuthenticated]
 
     @extend_schema(
         summary='add product',
@@ -26,7 +28,6 @@ class ProductView(APIView):
                     'title': {'type': 'string'},
                     'description': {'type': 'string'},
                     'category': {'type': 'string'},
-                    'seller_username': {'type': 'string'},
                     'price': {'type': 'number'},
                     'quantity': {'type': 'number'},
                     'picture': {'type': 'string', 'format': 'binary'},
@@ -41,6 +42,7 @@ class ProductView(APIView):
     )
     def post(self, request: Request):
         data = request.data
+        seller_username = request.user.username
         picture = request.FILES.get("picture")
         logger.info(data)
         serializer = ProductSerializer(data=data)
@@ -49,9 +51,14 @@ class ProductView(APIView):
             picture_url = f"backend/imageStorage/{product_id}.jpg"
             with open(picture_url, "wb") as file:
                 file.write(picture.read())
-            product = Product(id=product_id, picture_url=picture_url, **serializer.validated_data)
+            product = Product(id=product_id, picture_url=picture_url, seller_username=seller_username, **serializer.validated_data)
             productService.add_or_update_product(product)
-            return Response({'id': product_id, "picture_url": picture_url, **serializer.data},
+            return Response({
+                'id': product_id,
+                "picture_url": picture_url,
+                "seller_username": seller_username,
+                **serializer.data
+            },
                             status=status.HTTP_201_CREATED)
         else:
             raise ValidationError(serializer.errors)

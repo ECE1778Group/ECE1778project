@@ -7,5 +7,5 @@ class ProductSerializer(serializers.Serializer):
     price = serializers.FloatField()
     picture_url = serializers.URLField(read_only=True)
     category = serializers.CharField()
-    seller_username = serializers.CharField()
+    seller_username = serializers.CharField(read_only=True)
     quantity = serializers.IntegerField()

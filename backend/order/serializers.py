@@ -20,7 +20,6 @@ class OrderItemRequestSerializer(serializers.Serializer):
 
 class OrderCreateRequestSerializer(serializers.Serializer):
     items             = OrderItemRequestSerializer(many=True, allow_empty=False)
-    customer_username = serializers.CharField(max_length=20)
 
 class OrderItemSerializer(serializers.ModelSerializer):
     master_order_number = serializers.CharField(write_only=True)
