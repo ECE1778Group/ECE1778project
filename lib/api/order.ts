@@ -1,6 +1,7 @@
-import { BASE_URL } from "../../constant";
+import { useCallback } from "react";
+import { useFetch } from "./fetch-client";
 import { notifyOrderStatus } from "./notifications";
-import {OrderStatus} from "../../types";
+import { OrderStatus } from "../../types";
 
 type CreateOrderItem = {
   product_id: string;
@@ -20,45 +21,96 @@ type CreateOrderResponse = {
   updated_at: string;
 };
 
-export function useOrderApi() {
-  const createOrder = async (
-    body: CreateOrderRequest
-  ): Promise<CreateOrderResponse> => {
-    const res = await fetch(`${BASE_URL}/api/order/`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body),
-    });
+export type OrderSummaryDto = {
+  order_number: string;
+  customer_username: string;
+  total_amount: number;
+  created_at: string;
+  updated_at: string;
+};
 
-    let data: any = null;
-    try {
-      data = await res.json();
-    } catch {
-      // ignore parse error, will throw generic message below
-    }
+export type OrderItemDto = {
+  order_number: string;
+  product_id: string;
+  quantity: number;
+  unit_price: number;
+  total_amount: number;
+  status: string;
+};
 
-    if (!res.ok) {
-      const msg =
-        (data && (data.error || data.message)) ||
-        `Failed to create order (${res.status})`;
-      throw new Error(msg);
-    }
+export type OrderDetailDto = {
+  order_number: string;
+  items: OrderItemDto[];
+  customer_username: string;
+  total_amount: number;
+  created_at: string;
+  updated_at: string;
+};
 
-    return data as CreateOrderResponse;
-  };
+function normalizeStatus(raw: string): OrderStatus {
+  const v = raw.toLowerCase();
+  if (v === "completed") return "completed";
+  if (v === "cancelled") return "cancelled";
+  return "placed";
+}
 
-  return { createOrder };
+export function deriveOrderStatusFromItems(items: { status: string }[]): OrderStatus {
+  if (!items || items.length === 0) return "placed";
+  const statuses = items.map((it) => normalizeStatus(String(it.status)));
+  const nonCancelled = statuses.filter((s) => s !== "cancelled");
+  if (nonCancelled.length === 0) return "cancelled";
+  if (nonCancelled.includes("placed")) return "placed";
+  return "completed";
 }
 
 const memoryStore = new Map<string, OrderStatus>();
 
-export function getOrderStatus(orderNumber: string): OrderStatus {
-  return memoryStore.get(orderNumber) ?? "placed";
+export function getOrderStatus(orderNumber: string, fallback: OrderStatus = "placed"): OrderStatus {
+  return memoryStore.get(orderNumber) ?? fallback;
 }
 
 export async function setOrderStatus(orderNumber: string, status: OrderStatus) {
   memoryStore.set(orderNumber, status);
   await notifyOrderStatus({ order_number: orderNumber, status });
+}
+
+export function useOrderApi() {
+  const { getData, postData } = useFetch();
+
+  const createOrder = useCallback(
+    async (body: CreateOrderRequest, token?: string): Promise<CreateOrderResponse> => {
+      const data = await postData("/api/order/", body, token);
+      const created = data as CreateOrderResponse;
+      await setOrderStatus(created.order_number, "placed");
+      return created;
+    },
+    [postData]
+  );
+
+  const listOrders = useCallback(
+    async (token?: string): Promise<OrderSummaryDto[]> => {
+      const data = await getData("/api/order/", token);
+      return (Array.isArray(data) ? data : []) as OrderSummaryDto[];
+    },
+    [getData]
+  );
+
+  const getOrder = useCallback(
+    async (orderNumber: string, token?: string): Promise<OrderDetailDto | null> => {
+      const endpoint = `/api/order/${encodeURIComponent(orderNumber)}/`;
+      try {
+        const data = await getData(endpoint, token);
+        return data as OrderDetailDto;
+      } catch (e: any) {
+        const msg = (e && e.message ? String(e.message) : "").toLowerCase();
+        if (msg.includes("not found") || msg.includes("404")) {
+          return null;
+        }
+        throw e;
+      }
+    },
+    [getData]
+  );
+
+  return { createOrder, listOrders, getOrder };
 }

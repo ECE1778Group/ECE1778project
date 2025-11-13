@@ -31,10 +31,10 @@ export default function Login() {
     }
   };
 
-  // 跳转signup页面
+  // signup
   const handleSignup = () => router.push("/auth/signup");
 
-  // 测试用
+  // Testing
   const handleSkip = () => {
     skip();
     router.replace("/");

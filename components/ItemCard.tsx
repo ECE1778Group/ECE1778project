@@ -1,9 +1,9 @@
-// components/ItemCard.tsx
-import React, {useMemo} from "react";
-import {Image, Pressable, StyleSheet, Text, View} from "react-native";
-import {useRouter} from "expo-router";
-import {colors} from "../styles/colors";
-import {IMAGE_URL_PREFIX} from "../constant";
+import React, { useMemo } from "react";
+import { Image, Pressable, StyleSheet, Text, View } from "react-native";
+import { useRouter } from "expo-router";
+import { colors } from "../styles/colors";
+import { IMAGE_URL_PREFIX } from "../constant";
+import { OrderStatus } from "../types";
 
 export type ItemCardProps = {
   id: string;
@@ -14,6 +14,7 @@ export type ItemCardProps = {
   courseCode?: string;
   createdAt?: string | number | Date;
   onPress?: () => void;
+  orderStatus?: OrderStatus;
 };
 
 function formatPrice(n: number) {
@@ -34,29 +35,52 @@ function formatTimeAgo(d?: string | number | Date) {
 }
 
 export default function ItemCard(props: ItemCardProps) {
-  const {id, title, price, imageUrl, distanceKm, courseCode, createdAt, onPress} = props;
+  const { id, title, price, imageUrl, distanceKm, courseCode, createdAt, onPress, orderStatus } = props;
   const router = useRouter();
   const timeAgo = useMemo(() => formatTimeAgo(createdAt), [createdAt]);
   const priceText = useMemo(() => formatPrice(price), [price]);
-  const distanceText = useMemo(() => (distanceKm != null ? `${distanceKm.toFixed(1)} km` : ""), [distanceKm]);
+  const distanceText = useMemo(
+    () => (distanceKm != null ? `${distanceKm.toFixed(1)} km` : ""),
+    [distanceKm]
+  );
   const displayUrl = useMemo(() => {
     if (!imageUrl) return undefined;
     if (/^https?:\/\//i.test(imageUrl)) return imageUrl;
     return IMAGE_URL_PREFIX + imageUrl.replace(/^\/+/, "");
   }, [imageUrl]);
 
+  const statusText = useMemo(() => {
+    if (!orderStatus) return "";
+    if (orderStatus === "placed") return "Placed";
+    if (orderStatus === "completed") return "Completed";
+    if (orderStatus === "cancelled") return "Cancelled";
+    return orderStatus;
+  }, [orderStatus]);
+
+  const statusStyle = useMemo(() => {
+    if (!orderStatus) return null;
+    if (orderStatus === "cancelled")
+      return { bg: colors.danger, fg: colors.white, border: colors.danger };
+    if (orderStatus === "completed")
+      return { bg: colors.background, fg: colors.textPrimary, border: colors.border };
+    return { bg: colors.primary, fg: colors.white, border: colors.primary };
+  }, [orderStatus]);
+
   const handlePress = () => {
     if (onPress) onPress();
-    else router.push({pathname: "/item/[id]", params: {id}});
+    else router.push({ pathname: "/item/[id]", params: { id } });
   };
 
   return (
-    <Pressable onPress={handlePress} style={({pressed}) => [styles.card, pressed && styles.cardPressed]}
-               accessibilityRole="button">
+    <Pressable
+      onPress={handlePress}
+      style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
+      accessibilityRole="button"
+    >
       <View style={styles.row}>
         <View style={styles.media}>
           {displayUrl ? (
-            <Image source={{uri: displayUrl}} style={styles.image} resizeMode="cover"/>
+            <Image source={{ uri: displayUrl }} style={styles.image} resizeMode="cover" />
           ) : (
             <View style={styles.imagePlaceholder}>
               <Text style={styles.imagePlaceholderText}>No Image</Text>
@@ -64,7 +88,9 @@ export default function ItemCard(props: ItemCardProps) {
           )}
         </View>
         <View style={styles.info}>
-          <Text numberOfLines={2} style={styles.title}>{title}</Text>
+          <Text numberOfLines={2} style={styles.title}>
+            {title}
+          </Text>
           <View style={styles.metaRow}>
             {courseCode ? (
               <View style={styles.tag}>
@@ -86,6 +112,18 @@ export default function ItemCard(props: ItemCardProps) {
             <View style={styles.priceBadge}>
               <Text style={styles.priceText}>{priceText}</Text>
             </View>
+            {statusText && statusStyle ? (
+              <View
+                style={[
+                  styles.statusPill,
+                  { backgroundColor: statusStyle.bg, borderColor: statusStyle.border },
+                ]}
+              >
+                <Text style={[styles.statusPillText, { color: statusStyle.fg }]}>
+                  {statusText}
+                </Text>
+              </View>
+            ) : null}
           </View>
         </View>
       </View>
@@ -104,7 +142,7 @@ const styles = StyleSheet.create({
     marginVertical: 6,
   },
   cardPressed: {
-    transform: [{scale: 0.99}],
+    transform: [{ scale: 0.99 }],
   },
   row: {
     flexDirection: "row",
@@ -190,5 +228,15 @@ const styles = StyleSheet.create({
     color: colors.primary,
     fontSize: 14,
     fontWeight: "600",
+  },
+  statusPill: {
+    borderRadius: 8,
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  statusPillText: {
+    fontSize: 12,
+    fontWeight: "700",
   },
 });
