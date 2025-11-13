@@ -16,11 +16,11 @@ Including another URLconf
 """
 from django.urls import path
 
-from order.views.orderCreateView import OrderCreateView
+from order.views.orderView import OrderView
 from order.views.orderDetailsView import OrderDetailsView
 
 urlpatterns = [
-    path("", OrderCreateView.as_view()),
+    path("", OrderView.as_view()),
     path("<str:order_number>/", OrderDetailsView.as_view()),
 ]
 

@@ -2,10 +2,11 @@ import logging
 from collections import defaultdict
 
 from django.db import transaction
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema, OpenApiResponse
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_201_CREATED
+from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_201_CREATED, HTTP_200_OK
 from rest_framework.views import APIView
 from snowflake import SnowflakeGenerator
 
@@ -17,13 +18,16 @@ from product.product import Product
 logger = logging.getLogger(__name__)
 generator = SnowflakeGenerator(1)
 
-class OrderCreateView(APIView):
+class OrderView(APIView):
+    permission_classes = [IsAuthenticated]
+
     @extend_schema(
         summary='create order',
         request=OrderCreateRequestSerializer,
         responses={
             201: OrderSerializer,
             400: {"example": {"error": "string"}},
+            401: OpenApiResponse(description='user not authenticated')
         },
     )
 
@@ -81,5 +85,18 @@ class OrderCreateView(APIView):
                 product.quantity -= qty
                 productService.add_or_update_product(product)
         return Response(OrderSerializer(master_order).data, status=HTTP_201_CREATED)
+
+    @extend_schema(
+        summary='list orders of an user',
+        responses={
+            401: OpenApiResponse(description='user not authenticated')
+        },
+    )
+    def get(self, request: Request) -> Response:
+        username = request.user.username
+        orders = MasterOrder.objects.filter(customer_username=username)
+        return Response(OrderSerializer(orders, many=True).data, status=HTTP_200_OK)
+
+
 
 
