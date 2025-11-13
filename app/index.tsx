@@ -13,6 +13,7 @@ export default function Market() {
   const [text, setText] = useState("");
   const [data, setData] = useState<MarketplaceItem[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const router = useRouter();
   const {count} = useCart();
   const {searchProducts} = useProductApi();
@@ -51,7 +52,7 @@ export default function Market() {
     return () => {
       cancelled = true;
     };
-  }, [searchProducts, mapToItem]);
+  }, [mapToItem]);
 
   const handleSearch = useCallback(async () => {
     const q = text.trim();
@@ -67,6 +68,21 @@ export default function Market() {
       setData([]);
     } finally {
       setHasSearched(true);
+    }
+  }, [text, searchProducts, mapToItem]);
+
+  const handleRefresh = useCallback(async () => {
+    const q = text.trim();
+    const keyword = q || "all";
+    setRefreshing(true);
+    try {
+      const res = await searchProducts(keyword);
+      setData((res || []).map(mapToItem));
+    } catch {
+      setData([]);
+    } finally {
+      setHasSearched(true);
+      setRefreshing(false);
     }
   }, [text, searchProducts, mapToItem]);
 
@@ -91,32 +107,36 @@ export default function Market() {
         />
       </View>
 
-      {hasSearched && data.length === 0 ? (
-        <View style={styles.emptyWrap}>
-          <Text style={[styles.emptyText, {color: (colors as any).textSecondary || colors.placeholder}]}>
-            No available items
-          </Text>
-        </View>
-      ) : (
-        <FlatList
-          data={data}
-          keyExtractor={(item) => item.id}
-          renderItem={({item}) => (
-            <ItemCard
-              id={item.id}
-              title={item.title}
-              price={item.price}
-              imageUrl={"imageUrl" in item ? item.imageUrl : undefined}
-              distanceKm={"distanceKm" in item ? item.distanceKm : undefined}
-              courseCode={"courseCode" in item ? item.courseCode : undefined}
-              createdAt={"createdAt" in item ? item.createdAt : undefined}
-              onPress={() => router.push({pathname: "/item/[id]", params: {id: item.id}})}
-            />
-          )}
-          contentContainerStyle={{paddingVertical: 8, paddingBottom: 96}}
-          keyboardShouldPersistTaps="handled"
-        />
-      )}
+      <FlatList
+        data={data}
+        keyExtractor={(item) => item.id}
+        renderItem={({item}) => (
+          <ItemCard
+            id={item.id}
+            title={item.title}
+            price={item.price}
+            imageUrl={"imageUrl" in item ? item.imageUrl : undefined}
+            distanceKm={"distanceKm" in item ? item.distanceKm : undefined}
+            courseCode={"courseCode" in item ? item.courseCode : undefined}
+            createdAt={"createdAt" in item ? item.createdAt : undefined}
+            onPress={() => router.push({pathname: "/item/[id]", params: {id: item.id}})}
+          />
+        )}
+        contentContainerStyle={{paddingVertical: 8, paddingBottom: 96, flexGrow: 1}}
+        keyboardShouldPersistTaps="handled"
+        refreshing={refreshing}
+        onRefresh={handleRefresh}
+        ListEmptyComponent={hasSearched ? (
+          <View style={styles.emptyWrap}>
+            <Text style={[styles.emptyText, {color: (colors as any).textSecondary || colors.placeholder}]}>
+              No Items Available
+            </Text>
+            <Text style={[styles.emptyText, {color: (colors as any).textSecondary || colors.placeholder, marginTop: 4, fontSize: 12}]}>
+              Pull down to refresh
+            </Text>
+          </View>
+        ) : null}
+      />
 
       <Pressable
         accessibilityRole="button"
