@@ -21,7 +21,7 @@ class ProductDetailsView(APIView):
 
         responses={
             200: ProductSerializer,
-            404: NotFound,
+            404: OpenApiResponse(description='product not found'),
         },
     )
     def get(self, request: Request, id: str) -> Response:

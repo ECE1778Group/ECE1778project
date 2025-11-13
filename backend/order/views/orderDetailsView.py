@@ -21,7 +21,7 @@ class OrderDetailsView(APIView):
 
         responses={
             200: OrderDetailSerializer,
-            404: NotFound,
+            404: OpenApiResponse(description='order details not found'),
             401: OpenApiResponse(description='user not authenticated')
         },
     )

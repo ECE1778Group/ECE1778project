@@ -19,7 +19,10 @@ logger = logging.getLogger(__name__)
 class SendVerificationCodeView(APIView):
     @extend_schema(
         summary="Send verification code to email",
-        request={"type": "object", "properties": {"email": {"type": "string"}}},
+        request={
+            "application/json":
+                {"type": "object", "properties": {"email": {"type": "string"}}}
+        },
         responses={200: {"example": {"message": "Verification code sent"}}},
     )
     def post(self, request):
@@ -37,12 +40,14 @@ class VerifyCodeView(APIView):
     @extend_schema(
         summary="Verify email verification code",
         request={
-            "type": "object",
-            "properties": {
-                "email": {"type": "string"},
-                "code": {"type": "string"},
-            },
-            "required": ["email", "code"],
+            "application/json": {
+                "type": "object",
+                "properties": {
+                    "email": {"type": "string"},
+                    "code": {"type": "string"},
+                },
+                "required": ["email", "code"],
+            }
         },
         responses={200: {"example": {"message": "Verification successful"}}},
     )
