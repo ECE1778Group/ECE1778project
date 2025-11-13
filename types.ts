@@ -30,3 +30,5 @@ export type ItemMap = {
 
 export type MarketplaceItem = ItemMap[keyof ItemMap];
 export type ItemKind = keyof ItemMap;
+
+export type OrderStatus = "placed" | "completed" | "cancelled";

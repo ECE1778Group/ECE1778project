@@ -8,13 +8,15 @@ import {Pressable} from "react-native";
 import {colors} from "../styles/colors";
 import { PaperProvider } from "react-native-paper";
 import { MessageProvider } from "../contexts/MessageContext";
+import * as Notifications from "expo-notifications";
+import {ensureNotificationSetup} from "../lib/api/notifications";
 
 function AppShell() {
-  const { loggedIn, isAuthLoading, user } = useAuth();
+  const {loggedIn, isAuthLoading, user} = useAuth();
   const segments = useSegments();
   const inAuth = segments[0] === "auth";
   const router = useRouter();
-  
+
   useEffect(() => {
     const timer = setTimeout(() => {
       if (!isAuthLoading && !loggedIn && !inAuth) {
@@ -25,8 +27,24 @@ function AppShell() {
     return () => clearTimeout(timer);
   }, [loggedIn, inAuth, isAuthLoading]);
 
+  useEffect(() => {
+    ensureNotificationSetup().then();
+
+    const sub = Notifications.addNotificationResponseReceivedListener((resp) => {
+      const data: any = resp.notification.request.content.data;
+      if (data?.action === "open_order" && data.order_number) {
+        router.push({
+          pathname: "/order/[id]",
+          params: {order_number: String(data.order_number)},
+        });
+      }
+    });
+
+    return () => sub.remove();
+  }, [router]);
+
   if (isAuthLoading) {
-      return null;
+    return null;
   }
 
   function BackButton() {
@@ -54,7 +72,7 @@ function AppShell() {
         options={{
           title: "Sign Up",
           href: null,
-          tabBarStyle: { display: "none" },
+          tabBarStyle: {display: "none"},
           headerShown: false,
         }}
       />
@@ -99,7 +117,7 @@ export default function RootLayout() {
               <AppShell/>
             </ProfileProvider>
           </CartProvider>
-        </AuthProvider> 
+        </AuthProvider>
       </MessageProvider>
     </PaperProvider>
   );

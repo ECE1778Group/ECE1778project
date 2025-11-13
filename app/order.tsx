@@ -4,8 +4,8 @@ import {useRouter} from "expo-router";
 import {globalStyles} from "../styles/globalStyles";
 import {colors} from "../styles/colors";
 import OrderCard from "../components/OrderCard";
+import {OrderStatus} from "../types";
 
-type OrderStatus = "placed" | "completed" | "cancelled";
 type Order = { id: string; items: { imageUrl?: string }[]; createdAt: string; status: OrderStatus };
 type Section = { title: string; data: Order[] };
 

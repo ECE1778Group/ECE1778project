@@ -1,11 +1,12 @@
 import React, {useMemo, useState} from "react";
-import {FlatList, Pressable, StyleSheet, Text, View, Alert} from "react-native";
+import {FlatList, Pressable, StyleSheet, Text, View} from "react-native";
 import {globalStyles} from "../styles/globalStyles";
 import {colors} from "../styles/colors";
 import CartItem from "../components/CartItemCard";
 import {useCart} from "../contexts/CartContext";
 import {useAuth} from "../contexts/AuthContext";
 import {useOrderApi} from "../lib/api/order";
+import {notifyOrderPlaced} from "../lib/api/notifications";
 
 export default function Cart() {
   const {entries, changeQuantity, remove, clear, total} = useCart();
@@ -32,19 +33,14 @@ export default function Cart() {
         items: payloadItems,
         customer_username: user?.username || "Guest",
       });
-      const totalDisplay =
-        typeof resp?.total_amount === "number"
-          ? `$${Number(resp.total_amount).toFixed(
-              Number(resp.total_amount) % 1 === 0 ? 0 : 2
-            )}`
-          : "";
-      Alert.alert(
-        "Order Placed",
-        `Order #: ${resp.order_number}\nTotal: ${totalDisplay}`
-      );
+
+      await notifyOrderPlaced({
+        order_number: resp.order_number,
+        total_amount: resp.total_amount,
+        created_at: resp.created_at,
+      });
+
       clear();
-    } catch (err: any) {
-      Alert.alert("Checkout failed", err?.message || "Unable to create order.");
     } finally {
       setPlacing(false);
     }

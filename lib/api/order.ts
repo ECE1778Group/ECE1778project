@@ -1,4 +1,6 @@
 import { BASE_URL } from "../../constant";
+import { notifyOrderStatus } from "./notifications";
+import {OrderStatus} from "../../types";
 
 type CreateOrderItem = {
   product_id: string;
@@ -48,4 +50,15 @@ export function useOrderApi() {
   };
 
   return { createOrder };
+}
+
+const memoryStore = new Map<string, OrderStatus>();
+
+export function getOrderStatus(orderNumber: string): OrderStatus {
+  return memoryStore.get(orderNumber) ?? "placed";
+}
+
+export async function setOrderStatus(orderNumber: string, status: OrderStatus) {
+  memoryStore.set(orderNumber, status);
+  await notifyOrderStatus({ order_number: orderNumber, status });
 }
