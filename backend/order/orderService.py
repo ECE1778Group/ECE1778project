@@ -1,6 +1,6 @@
 import logging
 
-from order.models import MasterOrder
+from order.models import MasterOrder, OrderItem
 
 logger = logging.getLogger(__name__)
 
@@ -11,3 +11,10 @@ def get_order_by_id(order_number: str):
     except MasterOrder.DoesNotExist:
         return None
 
+
+def get_order_items_by_master_order_id(order_number: str):
+    try:
+        order_items = OrderItem.objects.filter(master_order_number=int(order_number))
+        return order_items
+    except OrderItem.DoesNotExist:
+        return None

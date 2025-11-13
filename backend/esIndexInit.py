@@ -1,7 +1,7 @@
 from elasticsearch import Elasticsearch
 
 es = Elasticsearch(
-    hosts=["http://127.0.0.1:9200"],
+    hosts=["http://elasticsearch:9200"],
     request_timeout=10
 )
 
@@ -27,8 +27,11 @@ PRODUCT_INDEX = {
 
 
 def create_product_index():
-    es.indices.create(index="product", body=PRODUCT_INDEX)
-    print(f"[INFO] product index created")
+    if not es.indices.exists(index="product"):
+        es.indices.create(index="product", body=PRODUCT_INDEX)
+        print(f"[INFO] product index created")
+    else:
+        print(f"[INFO] product index already exists")
 
 
 

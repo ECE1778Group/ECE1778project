@@ -3,7 +3,6 @@ from collections import defaultdict
 
 from django.db import transaction
 from drf_spectacular.utils import extend_schema
-from rest_framework.exceptions import ValidationError
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_201_CREATED
@@ -56,7 +55,7 @@ class OrderCreateView(APIView):
         )
 
         for seller_username, rows in seller_groups.items():
-            sub_order_number = f"S{next(generator)}"
+            sub_order_number = f"S-{next(generator)}"
             sub_total = sum(r[2] for r in rows)
             SubOrder.objects.create(
                 master_order_number=master_order_number,
@@ -67,11 +66,14 @@ class OrderCreateView(APIView):
 
             OrderItem.objects.bulk_create([
                 OrderItem(
+                    order_number=f"I-{next(generator)}",
+                    master_order_number=master_order_number,
                     sub_order_number=sub_order_number,
                     product_id=r[0].id,
                     quantity=r[1],
                     unit_price=r[0].price,
                     total_amount=r[2],
+                    status="placed"
                 ) for r in rows
             ])
 

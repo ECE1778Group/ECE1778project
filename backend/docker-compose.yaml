@@ -8,7 +8,7 @@ services:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     volumes:
       - ./:/backend
-    command: bash -c "python manage.py migrate && python manage.py runserver 0.0.0.0:80"
+    command: bash -c "python esIndexInit.py && python manage.py migrate && python manage.py shell < initTestUser.py && python manage.py runserver 0.0.0.0:80"
     networks:
       - backend-network
     ports:

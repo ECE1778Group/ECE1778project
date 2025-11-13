@@ -1,6 +1,7 @@
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
-from order.models import MasterOrder
+from order.models import MasterOrder, OrderItem
 
 
 class OrderSerializer(serializers.ModelSerializer):
@@ -20,3 +21,21 @@ class OrderItemRequestSerializer(serializers.Serializer):
 class OrderCreateRequestSerializer(serializers.Serializer):
     items             = OrderItemRequestSerializer(many=True, allow_empty=False)
     customer_username = serializers.CharField(max_length=20)
+
+class OrderItemSerializer(serializers.ModelSerializer):
+    master_order_number = serializers.CharField(write_only=True)
+    sub_order_number = serializers.CharField(write_only=True)
+    class Meta:
+        model = OrderItem
+        fields = '__all__'
+
+class OrderDetailSerializer(OrderSerializer):
+    items = serializers.SerializerMethodField()
+
+    @extend_schema_field(OrderItemSerializer(many=True))
+    def get_items(self, obj: MasterOrder):
+        items = self.context.get('items')
+        return OrderItemSerializer(items, many=True).data
+
+    class Meta(OrderSerializer.Meta):
+        fields = '__all__'
