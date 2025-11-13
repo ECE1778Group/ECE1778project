@@ -60,6 +60,10 @@ class VerifyCodeView(APIView):
             return Response({"error": msg}, status=status.HTTP_400_BAD_REQUEST)
 
 class SignupView(APIView):
+    @extend_schema(
+        summary="user signup",
+        request=UserSerializer,
+    )
     def post(self, request):
         data = request.data
         username = data.get("username")
@@ -90,12 +94,15 @@ class SigninView(APIView):
     @extend_schema(
         summary="User Signin",
         request={
-            "type": "object",
-            "properties": {
-                "email": {"type": "string"},
-                "password": {"type": "string"},
-            },
-            "required": ["email", "password"],
+            "application/json": {
+                "type": "object",
+                "properties": {
+                    "email": {"type": "string"},
+                    "password": {"type": "string"},
+                },
+                "required": ["email", "password"],
+            }
+
         },
         responses={
             200: {
