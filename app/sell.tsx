@@ -47,13 +47,20 @@ export default function Sell() {
   };
 
   const pickFromLibrary = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert("Permission required", "Please enable photo library access to select photos.");
+      return;
+    }
+
     const res = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: 'images',
+      mediaTypes: ["images"],
       allowsEditing: false,
       quality: 0.9,
       allowsMultipleSelection: true,
       selectionLimit: 10,
     });
+
     if (!res.canceled && res.assets?.length) {
       const uris = res.assets.map(a => a.uri).filter(Boolean) as string[];
       setImages(prev => {
@@ -71,7 +78,7 @@ export default function Sell() {
       return;
     }
     const res = await ImagePicker.launchCameraAsync({
-      mediaTypes: 'images',
+      mediaTypes: ["images"],
       allowsEditing: false,
       quality: 0.9,
     });

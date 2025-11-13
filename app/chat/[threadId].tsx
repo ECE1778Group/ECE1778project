@@ -60,13 +60,7 @@ export default function ChatThread() {
     requestAnimationFrame(() => listRef.current?.scrollToEnd({animated: true}));
   };
 
-  const sendImageFromLibrary = async () => {
-    const {status} = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== "granted") return;
-    const res = await ImagePicker.launchImageLibraryAsync({
-      quality: 0.8,
-      mediaTypes: ImagePicker.MediaTypeOptions.Images
-    });
+  const handleImageResult = (res: ImagePicker.ImagePickerResult) => {
     if (res.canceled || !res.assets?.length) return;
     const uri = res.assets[0].uri;
     setMsgs((m) => [...m, {id: `${Date.now()}`, from: "me", imageUri: uri, ts: Date.now()}]);
@@ -74,15 +68,21 @@ export default function ChatThread() {
     setExpanded(false);
   };
 
+  const sendImageFromLibrary = async () => {
+    const {status} = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") return;
+    const res = await ImagePicker.launchImageLibraryAsync({
+      quality: 0.8,
+      mediaTypes: ["images"]
+    });
+    handleImageResult(res);
+  };
+
   const sendImageFromCamera = async () => {
     const {status} = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== "granted") return;
     const res = await ImagePicker.launchCameraAsync({quality: 0.8});
-    if (res.canceled || !res.assets?.length) return;
-    const uri = res.assets[0].uri;
-    setMsgs((m) => [...m, {id: `${Date.now()}`, from: "me", imageUri: uri, ts: Date.now()}]);
-    requestAnimationFrame(() => listRef.current?.scrollToEnd({animated: true}));
-    setExpanded(false);
+    handleImageResult(res);
   };
 
   const openLocationPicker = () => {
