@@ -16,6 +16,7 @@ export default function Market() {
   const [hasSearched, setHasSearched] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [sharePrompt, setSharePrompt] = useState<{ id: string; title?: string } | null>(null);
+  const [shareTimeoutProgress, setShareTimeoutProgress] = useState(1);
   const router = useRouter();
   const {count} = useCart();
   const {searchProducts} = useProductApi();
@@ -117,6 +118,29 @@ export default function Market() {
     }, [checkClipboardForShare])
   );
 
+  useEffect(() => {
+    if (!sharePrompt) return;
+
+    setShareTimeoutProgress(1);
+    const totalMs = 5000;
+    const start = Date.now();
+
+    const timer = setInterval(() => {
+      const elapsed = Date.now() - start;
+      const remaining = Math.max(totalMs - elapsed, 0);
+      const fraction = remaining / totalMs;
+      setShareTimeoutProgress(fraction);
+      if (remaining <= 0) {
+        clearInterval(timer);
+        setSharePrompt(null);
+      }
+    }, 5);
+
+    return () => {
+      clearInterval(timer);
+    };
+  }, [sharePrompt]);
+
   const filled = count > 0;
 
   return (
@@ -162,7 +186,11 @@ export default function Market() {
             <Text style={[styles.emptyText, {color: (colors as any).textSecondary || colors.placeholder}]}>
               No Items Available
             </Text>
-            <Text style={[styles.emptyText, {color: (colors as any).textSecondary || colors.placeholder, marginTop: 4, fontSize: 12}]}>
+            <Text style={[styles.emptyText, {
+              color: (colors as any).textSecondary || colors.placeholder,
+              marginTop: 4,
+              fontSize: 12
+            }]}>
               Pull down to refresh
             </Text>
           </View>
@@ -171,31 +199,43 @@ export default function Market() {
 
       {sharePrompt ? (
         <View style={styles.shareCard}>
-          <View style={styles.shareCardTextWrap}>
-            <Text style={styles.shareCardTitle}>Open shared item?</Text>
-            <Text style={styles.shareCardSubtitle} numberOfLines={2}>
-              {sharePrompt.title
-                ? `${sharePrompt.title} (ID: ${sharePrompt.id})`
-                : `Item ID: ${sharePrompt.id}`}
+          <Text style={styles.shareCardTitle}>Open shared item?</Text>
+
+          <View style={styles.shareCardMainRow}>
+            <Text
+              style={styles.shareCardItemTitle}
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
+              {sharePrompt.title || "Shared item"}
             </Text>
+            <View style={styles.shareCardActions}>
+              <Pressable
+                style={[styles.shareCardBtn, styles.shareCardCancel]}
+                onPress={() => setSharePrompt(null)}
+              >
+                <Text style={styles.shareCardCancelText}>Later</Text>
+              </Pressable>
+              <Pressable
+                style={[styles.shareCardBtn, styles.shareCardOpen]}
+                onPress={() => {
+                  const targetId = sharePrompt.id;
+                  setSharePrompt(null);
+                  router.push({pathname: "/item/[id]", params: {id: targetId}});
+                }}
+              >
+                <Text style={styles.shareCardOpenText}>Open</Text>
+              </Pressable>
+            </View>
           </View>
-          <View style={styles.shareCardActions}>
-            <Pressable
-              style={[styles.shareCardBtn, styles.shareCardCancel]}
-              onPress={() => setSharePrompt(null)}
-            >
-              <Text style={styles.shareCardCancelText}>Later</Text>
-            </Pressable>
-            <Pressable
-              style={[styles.shareCardBtn, styles.shareCardOpen]}
-              onPress={() => {
-                const targetId = sharePrompt.id;
-                setSharePrompt(null);
-                router.push({pathname: "/item/[id]", params: {id: targetId}});
-              }}
-            >
-              <Text style={styles.shareCardOpenText}>Open</Text>
-            </Pressable>
+
+          <View style={styles.shareCardProgressTrack}>
+            <View
+              style={[
+                styles.shareCardProgressBar,
+                {width: `${Math.max(0, Math.min(1, shareTimeoutProgress)) * 100}%`},
+              ]}
+            />
           </View>
         </View>
       ) : null}
@@ -285,31 +325,33 @@ const styles = StyleSheet.create({
     top: 5,
     backgroundColor: colors.white,
     borderRadius: 12,
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
     paddingVertical: 10,
     borderColor: colors.border,
     borderWidth: 1,
-    flexDirection: "row",
-    alignItems: "center",
     shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowRadius: 6,
     shadowOffset: {width: 0, height: 3},
     elevation: 4,
   },
-  shareCardTextWrap: {
-    flex: 1,
-    marginRight: 8,
-  },
   shareCardTitle: {
     color: colors.textPrimary,
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: "700",
-    marginBottom: 2,
+    marginBottom: 6,
   },
-  shareCardSubtitle: {
-    color: colors.placeholder,
-    fontSize: 12,
+  shareCardMainRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 6,
+  },
+  shareCardItemTitle: {
+    flex: 1,
+    color: colors.textPrimary,
+    fontSize: 17,
+    fontWeight: "600",
+    marginRight: 8,
   },
   shareCardActions: {
     flexDirection: "row",
@@ -338,5 +380,16 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontSize: 12,
     fontWeight: "700",
+  },
+  shareCardProgressTrack: {
+    marginTop: 4,
+    height: 3,
+    borderRadius: 2,
+    backgroundColor: colors.background,
+    overflow: "hidden",
+  },
+  shareCardProgressBar: {
+    height: "100%",
+    backgroundColor: colors.primary,
   },
 });
