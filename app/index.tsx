@@ -3,11 +3,11 @@ import {FlatList, Pressable, StyleSheet, Text, TextInput, View} from "react-nati
 import {useFocusEffect, useRouter} from "expo-router";
 import * as Clipboard from "expo-clipboard";
 import ItemCard from "../components/ItemCard";
+import CartFab from "../components/CartFab";
 import {globalStyles} from "../styles/globalStyles";
 import {colors} from "../styles/colors";
-import {ArrowDownWideNarrow, ShoppingCart} from "lucide-react-native";
+import {ArrowDownWideNarrow} from "lucide-react-native";
 import {MarketplaceItem} from "../types";
-import {useCart} from "../contexts/CartContext";
 import {useProductApi} from "../lib/api/product";
 
 export default function Market() {
@@ -18,7 +18,6 @@ export default function Market() {
   const [sharePrompt, setSharePrompt] = useState<{ id: string; title?: string } | null>(null);
   const [shareTimeoutProgress, setShareTimeoutProgress] = useState(1);
   const router = useRouter();
-  const {count} = useCart();
   const {searchProducts} = useProductApi();
 
   const lastClipboardRef = useRef<string | null>(null);
@@ -141,8 +140,6 @@ export default function Market() {
     };
   }, [sharePrompt]);
 
-  const filled = count > 0;
-
   return (
     <View style={globalStyles.container}>
       <View style={styles.searchRow}>
@@ -240,18 +237,9 @@ export default function Market() {
         </Pressable>
       ) : null}
 
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Open cart"
-        onPress={() => router.push("/cart")}
-        style={({pressed}) => [
-          styles.fab,
-          filled ? styles.fabFilled : styles.fabEmpty,
-          pressed && styles.fabPressed,
-        ]}
-      >
-        <ShoppingCart size={22} color={filled ? colors.white : colors.primary}/>
-      </Pressable>
+      <View style={styles.fabWrapper}>
+        <CartFab/>
+      </View>
     </View>
   );
 }
@@ -290,6 +278,11 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
+  },
+  fabWrapper: {
+    position: "absolute",
+    right: 18,
+    bottom: 24,
   },
   fab: {
     position: "absolute",

@@ -17,7 +17,8 @@ import {globalStyles} from "../../styles/globalStyles";
 import {colors} from "../../styles/colors";
 import {MarketplaceItem} from "../../types";
 import {useCart} from "../../contexts/CartContext";
-import {Share2, ShoppingCart} from "lucide-react-native";
+import CartFab from "../../components/CartFab";
+import {Share2} from "lucide-react-native";
 import {useProductApi} from "../../lib/api/product";
 import {IMAGE_URL_PREFIX} from "../../constant";
 
@@ -32,7 +33,7 @@ function formatPrice(n: number) {
 export default function ItemDetail() {
   const {id} = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const {add, count} = useCart();
+  const {add} = useCart();
   const {getProduct} = useProductApi();
 
   const [item, setItem] = useState<LocalItem | null>(null);
@@ -171,8 +172,6 @@ export default function ItemDetail() {
     );
   }
 
-  const filled = count > 0;
-
   return (
     <View style={globalStyles.container}>
       <View style={styles.shareWrapper}>
@@ -258,18 +257,7 @@ export default function ItemDetail() {
       </View>
 
       <View ref={fabRef} style={styles.fabWrapper}>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Open cart"
-          onPress={() => router.push("/cart")}
-          style={({pressed}) => [
-            styles.fab,
-            filled ? styles.fabFilled : styles.fabEmpty,
-            pressed && styles.fabPressed,
-          ]}
-        >
-          <ShoppingCart size={22} color={filled ? colors.white : colors.primary}/>
-        </Pressable>
+        <CartFab/>
       </View>
     </View>
   );
