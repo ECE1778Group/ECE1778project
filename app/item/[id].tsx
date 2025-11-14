@@ -349,30 +349,6 @@ const styles = StyleSheet.create({
     right: 18,
     bottom: 96,
   },
-  fab: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#000",
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-    shadowOffset: {width: 0, height: 3},
-    elevation: 5,
-  },
-  fabFilled: {
-    backgroundColor: colors.primary,
-  },
-  fabEmpty: {
-    backgroundColor: colors.secondary,
-    borderColor: colors.border,
-    borderWidth: 1,
-  },
-  fabPressed: {
-    transform: [{scale: 0.98}],
-    opacity: 0.9,
-  },
   flyImage: {
     position: "absolute",
     width: 64,

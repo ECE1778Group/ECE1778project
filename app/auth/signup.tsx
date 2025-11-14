@@ -6,7 +6,7 @@ import {colors} from "../../styles/colors";
 import {useUserApi} from "../../lib/api/user";
 import {useMessage} from "../../contexts/MessageContext";
 import {isValidCode, isValidEmail, isValidPassword} from "../../lib/utils/validation";
-
+import {globalStyles} from "../../styles/globalStyles";
 
 export default function Signup() {
   const router = useRouter();
