@@ -37,7 +37,7 @@ export const useProductApi = () => {
 
   const getProduct = async (id: string) => {
     try {
-      const res = await getData(`/api/product/${encodeURIComponent(id)}`);
+      const res = await getData(`/api/product/details/${encodeURIComponent(id)}`);
       return (res ?? null) as ProductDTO | null;
     } catch (e: any) {
       const msg = (e && e.message ? String(e.message) : "").toLowerCase();
