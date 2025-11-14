@@ -1,6 +1,8 @@
 // lib/api/product.ts
 import { useCallback } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFetch } from "./fetch-client";
+import { BASE_URL } from "../../constant";
 
 type ProductDTO = {
   id: string;
@@ -15,15 +17,15 @@ type ProductDTO = {
 
 type CreateProductDTO = {
   title: string;
-  description?: string;
+  description: string;
   price: number;
-  picture_url?: string;
-  category?: string;
-  quantity?: number;
+  picture_url: string;
+  category: string;
+  quantity: number;
 };
 
 export const useProductApi = () => {
-  const { getData, postData } = useFetch();
+  const { getData } = useFetch();
 
   const searchProducts = useCallback(
     async (keyword: string) => {
@@ -61,10 +63,56 @@ export const useProductApi = () => {
 
   const addProduct = useCallback(
     async (body: CreateProductDTO) => {
-      const res = await postData("/api/product/", body);
-      return res as ProductDTO;
+      const form = new FormData();
+      form.append("title", body.title);
+      form.append("description", body.description);
+      form.append("category", body.category);
+      form.append("price", String(body.price));
+      form.append("quantity", String(body.quantity));
+
+      if (body.picture_url) {
+        const uri = body.picture_url;
+        const name = uri.split("/").pop() || "photo.jpg";
+        const extMatch = /\.(\w+)$/.exec(name);
+        const ext = extMatch ? extMatch[1].toLowerCase() : "jpg";
+        let mime = "image/jpeg";
+        if (ext === "png") mime = "image/png";
+        else if (ext === "heic") mime = "image/heic";
+
+        form.append(
+          "picture",
+          {
+            uri,
+            name,
+            type: mime,
+          } as any
+        );
+      }
+
+      const token = await AsyncStorage.getItem("access");
+      const headers: Record<string, string> = {};
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+
+      const res = await fetch(`${BASE_URL}/api/product/`, {
+        method: "POST",
+        headers,
+        body: form,
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        const msg = (data as any)?.error || (data as any)?.message || "Request failed";
+        const err: any = new Error(msg);
+        err.status = res.status;
+        throw err;
+      }
+
+      return data as ProductDTO;
     },
-    [postData]
+    []
   );
 
   return { searchProducts, getProduct, addProduct };
