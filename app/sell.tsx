@@ -135,22 +135,20 @@ export default function Sell() {
     setImages(prev => prev.filter(u => u !== uri));
   };
 
-  const submit = async () => {
+    const submit = async () => {
     if (!canSubmit) return;
 
     try {
-      const form = new FormData();
-      form.append("title", title.trim());
-      form.append("description", buildDescription());
-      form.append("category", kind === "book" ? "book" : category.trim() || "other");
-      form.append("seller_username", user?.username || "anonymous");
-      form.append("price", String(Number(price)));
-      form.append("quantity", String(Number(stock || "1")));
-      if (images[0]) {
-        form.append("picture_url", images[0]);
-      }
+      const payload = {
+        title: title.trim(),
+        description: buildDescription(),
+        price: Number(price),
+        picture_url: images[0],
+        category: kind === "book" ? "book" : category.trim() || "other",
+        quantity: Number(stock || "1"),
+      };
 
-      await addProduct(form);
+      await addProduct(payload);
       Alert.alert("Listed", "Your item has been created.");
       router.push("/");
     } catch (e: any) {

@@ -1,3 +1,4 @@
+// lib/api/order.ts
 import { useCallback } from "react";
 import { useFetch } from "./fetch-client";
 import { notifyOrderStatus } from "./notifications";
@@ -78,8 +79,8 @@ export function useOrderApi() {
   const { getData, postData } = useFetch();
 
   const createOrder = useCallback(
-    async (body: CreateOrderRequest, token?: string): Promise<CreateOrderResponse> => {
-      const data = await postData("/api/order/", body, token);
+    async (body: CreateOrderRequest): Promise<CreateOrderResponse> => {
+      const data = await postData("/api/order/", body);
       const created = data as CreateOrderResponse;
       await setOrderStatus(created.order_number, "placed");
       return created;
@@ -88,18 +89,18 @@ export function useOrderApi() {
   );
 
   const listOrders = useCallback(
-    async (token?: string): Promise<OrderSummaryDto[]> => {
-      const data = await getData("/api/order/", token);
+    async (): Promise<OrderSummaryDto[]> => {
+      const data = await getData("/api/order/");
       return (Array.isArray(data) ? data : []) as OrderSummaryDto[];
     },
     [getData]
   );
 
   const getOrder = useCallback(
-    async (orderNumber: string, token?: string): Promise<OrderDetailDto | null> => {
+    async (orderNumber: string): Promise<OrderDetailDto | null> => {
       const endpoint = `/api/order/${encodeURIComponent(orderNumber)}/`;
       try {
-        const data = await getData(endpoint, token);
+        const data = await getData(endpoint);
         return data as OrderDetailDto;
       } catch (e: any) {
         const msg = (e && e.message ? String(e.message) : "").toLowerCase();

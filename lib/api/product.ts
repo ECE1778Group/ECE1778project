@@ -1,6 +1,5 @@
+// lib/api/product.ts
 import { useFetch } from "./fetch-client";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { BASE_URL } from "../../constant";
 
 type ProductDTO = {
   id: string;
@@ -13,8 +12,17 @@ type ProductDTO = {
   quantity?: number;
 };
 
+type CreateProductDTO = {
+  title: string;
+  description?: string;
+  price: number;
+  picture_url?: string;
+  category?: string;
+  quantity?: number;
+};
+
 export const useProductApi = () => {
-  const { getData } = useFetch();
+  const { getData, postData } = useFetch();
 
   const searchProducts = async (keyword: string) => {
     const q = keyword.trim();
@@ -23,7 +31,10 @@ export const useProductApi = () => {
       const res = await getData(`/api/product/search/?keyword=${encodeURIComponent(q)}`);
       return (res ?? []) as ProductDTO[];
     } catch (e: any) {
-      if (e?.status === 404) return [];
+      const msg = (e && e.message ? String(e.message) : "").toLowerCase();
+      if (msg.includes("not found") || msg.includes("404")) {
+        return [];
+      }
       return [];
     }
   };
@@ -33,28 +44,17 @@ export const useProductApi = () => {
       const res = await getData(`/api/product/${encodeURIComponent(id)}`);
       return (res ?? null) as ProductDTO | null;
     } catch (e: any) {
-      if (e?.status === 404) return null;
+      const msg = (e && e.message ? String(e.message) : "").toLowerCase();
+      if (msg.includes("not found") || msg.includes("404")) {
+        return null;
+      }
       return null;
     }
   };
 
-  const addProduct = async (form: FormData) => {
-    const token = await AsyncStorage.getItem("access");
-    const headers: Record<string, string> = {};
-    if (token) headers["Authorization"] = `Bearer ${token}`;
-    const res = await fetch(`${BASE_URL}/api/product/`, {
-      method: "POST",
-      headers,
-      body: form,
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      const msg = data?.error || data?.message || "Request failed";
-      const err: any = new Error(msg);
-      (err.status = res.status);
-      throw err;
-    }
-    return data;
+  const addProduct = async (body: CreateProductDTO) => {
+    const res = await postData("/api/product/", body);
+    return res as ProductDTO;
   };
 
   return { searchProducts, getProduct, addProduct };

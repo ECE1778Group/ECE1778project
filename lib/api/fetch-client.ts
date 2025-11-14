@@ -1,5 +1,6 @@
 // lib/api/fetch-client.ts
 import { useState, useCallback } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { BASE_URL } from "../../constant";
 
 export const useFetch = () => {
@@ -12,8 +13,10 @@ export const useFetch = () => {
       setError(null);
       try {
         const headers: Record<string, string> = { "Content-Type": "application/json" };
-        if (token) {
-          headers["Authorization"] = `Bearer ${token}`;
+
+        const finalToken = token ?? await AsyncStorage.getItem("access") as string;
+        if (finalToken) {
+          headers["Authorization"] = `Bearer ${finalToken}`;
         }
 
         const res = await fetch(`${BASE_URL}${endpoint}`, {
