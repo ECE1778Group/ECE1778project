@@ -176,7 +176,7 @@ export default function OrderDetail() {
             imageUrl={item.imageUrl}
             orderStatus={item.status}
             onPress={() =>
-              router.push({ pathname: "/item/[id]", params: { id: item.id } })
+              router.push({ pathname: "/chat/[id]", params: { id: item.id } })
             }
           />
         )}
