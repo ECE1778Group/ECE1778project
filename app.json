@@ -14,7 +14,10 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.penguinsofmadagascar.ECE1778project"
+      "bundleIdentifier": "com.penguinsofmadagascar.ECE1778project",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {

@@ -1,6 +1,7 @@
-import React, {useCallback, useEffect, useState} from "react";
+import React, {useCallback, useEffect, useRef, useState} from "react";
 import {FlatList, Pressable, StyleSheet, Text, TextInput, View} from "react-native";
-import {useRouter} from "expo-router";
+import {useFocusEffect, useRouter} from "expo-router";
+import * as Clipboard from "expo-clipboard";
 import ItemCard from "../components/ItemCard";
 import {globalStyles} from "../styles/globalStyles";
 import {colors} from "../styles/colors";
@@ -14,9 +15,12 @@ export default function Market() {
   const [data, setData] = useState<MarketplaceItem[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [sharePrompt, setSharePrompt] = useState<{ id: string; title?: string } | null>(null);
   const router = useRouter();
   const {count} = useCart();
   const {searchProducts} = useProductApi();
+
+  const lastClipboardRef = useRef<string | null>(null);
 
   const mapToItem = useCallback((p: any): MarketplaceItem => {
     const cat = String(p?.category ?? "").toLowerCase();
@@ -52,7 +56,7 @@ export default function Market() {
     return () => {
       cancelled = true;
     };
-  }, [mapToItem]);
+  }, [mapToItem, searchProducts]);
 
   const handleSearch = useCallback(async () => {
     const q = text.trim();
@@ -85,6 +89,33 @@ export default function Market() {
       setRefreshing(false);
     }
   }, [text, searchProducts, mapToItem]);
+
+  const checkClipboardForShare = useCallback(async () => {
+    try {
+      const clip = await Clipboard.getStringAsync();
+      if (!clip || clip === lastClipboardRef.current) return;
+
+      const idMatch = clip.match(/Item ID:\s*(\S+)/i);
+      const titleMatch = clip.match(/Title:\s*(.+)/i);
+
+      lastClipboardRef.current = clip;
+
+      if (!idMatch || !idMatch[1]) {
+        return;
+      }
+
+      const sharedId = idMatch[1];
+      const sharedTitle = titleMatch?.[1]?.trim();
+      setSharePrompt({id: sharedId, title: sharedTitle});
+    } catch {
+    }
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      checkClipboardForShare();
+    }, [checkClipboardForShare])
+  );
 
   const filled = count > 0;
 
@@ -137,6 +168,37 @@ export default function Market() {
           </View>
         ) : null}
       />
+
+      {sharePrompt ? (
+        <View style={styles.shareCard}>
+          <View style={styles.shareCardTextWrap}>
+            <Text style={styles.shareCardTitle}>Open shared item?</Text>
+            <Text style={styles.shareCardSubtitle} numberOfLines={2}>
+              {sharePrompt.title
+                ? `${sharePrompt.title} (ID: ${sharePrompt.id})`
+                : `Item ID: ${sharePrompt.id}`}
+            </Text>
+          </View>
+          <View style={styles.shareCardActions}>
+            <Pressable
+              style={[styles.shareCardBtn, styles.shareCardCancel]}
+              onPress={() => setSharePrompt(null)}
+            >
+              <Text style={styles.shareCardCancelText}>Later</Text>
+            </Pressable>
+            <Pressable
+              style={[styles.shareCardBtn, styles.shareCardOpen]}
+              onPress={() => {
+                const targetId = sharePrompt.id;
+                setSharePrompt(null);
+                router.push({pathname: "/item/[id]", params: {id: targetId}});
+              }}
+            >
+              <Text style={styles.shareCardOpenText}>Open</Text>
+            </Pressable>
+          </View>
+        </View>
+      ) : null}
 
       <Pressable
         accessibilityRole="button"
@@ -215,5 +277,66 @@ const styles = StyleSheet.create({
   fabPressed: {
     transform: [{scale: 0.98}],
     opacity: 0.9,
+  },
+  shareCard: {
+    position: "absolute",
+    left: 16,
+    right: 16,
+    top: 5,
+    backgroundColor: colors.white,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderColor: colors.border,
+    borderWidth: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    shadowOffset: {width: 0, height: 3},
+    elevation: 4,
+  },
+  shareCardTextWrap: {
+    flex: 1,
+    marginRight: 8,
+  },
+  shareCardTitle: {
+    color: colors.textPrimary,
+    fontSize: 14,
+    fontWeight: "700",
+    marginBottom: 2,
+  },
+  shareCardSubtitle: {
+    color: colors.placeholder,
+    fontSize: 12,
+  },
+  shareCardActions: {
+    flexDirection: "row",
+    gap: 6,
+  },
+  shareCardBtn: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  shareCardCancel: {
+    backgroundColor: colors.white,
+    borderColor: colors.border,
+  },
+  shareCardOpen: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  shareCardCancelText: {
+    color: colors.textPrimary,
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  shareCardOpenText: {
+    color: colors.white,
+    fontSize: 12,
+    fontWeight: "700",
   },
 });

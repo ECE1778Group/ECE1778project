@@ -1,12 +1,23 @@
-// app/item/[id].tsx
 import React, {useEffect, useRef, useState} from "react";
-import {Animated, Easing, Image, Pressable, ScrollView, StyleSheet, Text, View} from "react-native";
+import {
+  Alert,
+  Animated,
+  Easing,
+  Image,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+  Share,
+} from "react-native";
 import {useLocalSearchParams, useRouter} from "expo-router";
+import * as Clipboard from "expo-clipboard";
 import {globalStyles} from "../../styles/globalStyles";
 import {colors} from "../../styles/colors";
 import {MarketplaceItem} from "../../types";
 import {useCart} from "../../contexts/CartContext";
-import {ShoppingCart} from "lucide-react-native";
+import {Share2, ShoppingCart} from "lucide-react-native";
 import {useProductApi} from "../../lib/api/product";
 import {IMAGE_URL_PREFIX} from "../../constant";
 
@@ -78,7 +89,7 @@ export default function ItemDetail() {
     return () => {
       cancelled = true;
     };
-  }, [id]);
+  }, [id, getProduct]);
 
   const imgBoxRef = useRef<View>(null);
   const fabRef = useRef<View>(null);
@@ -127,6 +138,23 @@ export default function ItemDetail() {
     });
   };
 
+  const shareItem = async () => {
+    if (!item) return;
+
+    const shareText =
+      `UT Reuse item\n` +
+      `Title: ${item.title}\n` +
+      `Item ID: ${item.id}\n` +
+      `Price: ${formatPrice(item.price)}\n`;
+
+    try {
+      await Clipboard.setStringAsync(shareText);
+      await Share.share({message: shareText});
+    } catch {
+      Alert.alert("Failed", "Unable to share this item.");
+    }
+  };
+
   if (loading) {
     return (
       <View style={[globalStyles.container, {alignItems: "center", justifyContent: "center"}]}>
@@ -147,6 +175,17 @@ export default function ItemDetail() {
 
   return (
     <View style={globalStyles.container}>
+      <View style={styles.shareWrapper}>
+        <Pressable
+          onPress={shareItem}
+          style={styles.shareBtn}
+          accessibilityRole="button"
+          accessibilityLabel="Share item"
+        >
+          <Share2 size={24} color={colors.textPrimary}/>
+        </Pressable>
+      </View>
+
       <ScrollView contentContainerStyle={styles.content}>
         <View ref={imgBoxRef} style={styles.mediaBox}>
           {item.imageUrl ? (
@@ -377,5 +416,26 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 8,
+  },
+  shareWrapper: {
+    position: "absolute",
+    right: 16,
+    top: 10,
+    zIndex: 2,
+  },
+  shareBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.white,
+    borderColor: colors.border,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    shadowOffset: {width: 0, height: 2},
+    elevation: 3,
   },
 });
