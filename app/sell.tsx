@@ -102,11 +102,9 @@ export default function Sell() {
     Animated.parallel([
       Animated.timing(fade, { toValue: 0, duration: 160, useNativeDriver: true }),
       Animated.timing(sheetY, { toValue: 300, duration: 200, useNativeDriver: true }),
-    ]).start(({ finished }) => {
-      if (finished) {
-        setPickerOpen(false);
-        if (cb) cb();
-      }
+    ]).start(() => {
+      setPickerOpen(false);
+      if (cb) cb();
     });
   };
 
