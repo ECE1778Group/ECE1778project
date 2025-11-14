@@ -31,9 +31,8 @@ class ProductView(APIView):
                     'price': {'type': 'number'},
                     'quantity': {'type': 'number'},
                     'picture': {'type': 'string', 'format': 'binary'},
-                    'seller_name': {'type': 'string'},
                 },
-                'required': ['title', 'description', 'category', 'price', 'picture', 'seller_name'],
+                'required': ['title', 'description', 'category', 'price', 'picture'],
             }
         },
         responses={
