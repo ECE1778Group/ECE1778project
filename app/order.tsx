@@ -12,6 +12,8 @@ import { colors } from "../styles/colors";
 import OrderCard from "../components/OrderCard";
 import { OrderStatus } from "../types";
 import { deriveOrderStatusFromItems, useOrderApi } from "../lib/api/order";
+import { useProductApi } from "../lib/api/product";
+import { IMAGE_URL_PREFIX } from "../constant";
 
 type Order = {
   id: string;
@@ -25,6 +27,7 @@ type Section = { title: string; data: Order[] };
 export default function Orders() {
   const router = useRouter();
   const { listOrders, getOrder } = useOrderApi();
+  const { getProduct } = useProductApi();
 
   const [sections, setSections] = useState<Section[]>([]);
   const [loading, setLoading] = useState(true);
@@ -45,13 +48,45 @@ export default function Orders() {
 
         for (const summary of summaries) {
           const detail = await getOrder(summary.order_number);
-          const items = detail?.items ?? [];
-          const status = deriveOrderStatusFromItems(items);
+          const rawItems = detail?.items ?? [];
+          const status = deriveOrderStatusFromItems(rawItems);
+
+          let viewItems: { imageUrl?: string }[] = [];
+
+          if (rawItems.length > 0) {
+            const productIds = Array.from(
+              new Set(rawItems.map((it) => it.product_id))
+            );
+            const productResults = await Promise.all(
+              productIds.map(async (pid) => {
+                try {
+                  const p = await getProduct(pid);
+                  return { pid, product: p };
+                } catch {
+                  return { pid, product: null as any };
+                }
+              })
+            );
+            const productMap = new Map<string, any>();
+            productResults.forEach(({ pid, product }) => {
+              if (product) productMap.set(pid, product);
+            });
+
+            viewItems = rawItems.map((it) => {
+              const product = productMap.get(it.product_id);
+              let picture: string | undefined = product?.picture_url;
+              if (picture && !/^https?:\/\//i.test(picture)) {
+                picture = IMAGE_URL_PREFIX + picture.replace(/^\/+/, "");
+              }
+              return { imageUrl: picture };
+            });
+          }
+
           orders.push({
             id: summary.order_number,
             createdAt: summary.created_at,
             status,
-            items: items.map(() => ({})),
+            items: viewItems,
           });
         }
 
@@ -74,7 +109,7 @@ export default function Orders() {
         }
       }
     },
-    [listOrders, getOrder]
+    [listOrders, getOrder, getProduct]
   );
 
   useEffect(() => {

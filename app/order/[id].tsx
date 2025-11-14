@@ -36,84 +36,95 @@ export default function OrderDetail() {
   const [notFound, setNotFound] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const loadOrder = useCallback(async () => {
-    if (!id) {
-      setNotFound(true);
-      setLoading(false);
-      return;
-    }
-
-    setError(null);
-    setNotFound(false);
-    if (!refreshing) setLoading(true);
-
-    try {
-      const detail = await getOrder(String(id));
-      if (!detail) {
+  const loadOrder = useCallback(
+    async (isRefresh: boolean = false) => {
+      if (!id) {
         setNotFound(true);
         setItems([]);
+        setLoading(false);
+        setRefreshing(false);
         return;
       }
 
-      const itemDtos = detail.items ?? [];
+      setError(null);
+      setNotFound(false);
+      if (isRefresh) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
 
-      const productIds = Array.from(new Set(itemDtos.map((it) => it.product_id)));
-      const productResults = await Promise.all(
-        productIds.map(async (pid) => {
-          try {
-            const p = await getProduct(pid);
-            return { pid, product: p };
-          } catch {
-            return { pid, product: null as any };
-          }
-        })
-      );
-      const productMap = new Map<string, any>();
-      productResults.forEach(({ pid, product }) => {
-        if (product) productMap.set(pid, product);
-      });
-
-      const mapped: OrderItemView[] = itemDtos.map((it) => {
-        const product = productMap.get(it.product_id);
-        let picture: string | undefined = product?.picture_url;
-        if (picture && !/^https?:\/\//i.test(picture)) {
-          picture = IMAGE_URL_PREFIX + picture.replace(/^\/+/, "");
+      try {
+        const detail = await getOrder(String(id));
+        if (!detail) {
+          setNotFound(true);
+          setItems([]);
+          return;
         }
-        const status = (it.status as OrderStatus) || "placed";
-        return {
-          id: String(it.product_id),
-          title: product?.title || `Item ${it.product_id}`,
-          price:
-            typeof product?.price === "number"
-              ? product.price
-              : Number(it.unit_price) || 0,
-          imageUrl: picture,
-          status,
-        };
-      });
 
-      const derived = deriveOrderStatusFromItems(
-        itemDtos.map((x) => ({ status: x.status }))
-      );
+        const itemDtos = detail.items ?? [];
 
-      setItems(mapped);
-      setOrderStatus(derived);
-    } catch (e: any) {
-      setError(e?.message || "Failed to load order");
-      setItems([]);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [id, getOrder, getProduct, refreshing]);
+        const productIds = Array.from(new Set(itemDtos.map((it) => it.product_id)));
+        const productResults = await Promise.all(
+          productIds.map(async (pid) => {
+            try {
+              const p = await getProduct(pid);
+              return { pid, product: p };
+            } catch {
+              return { pid, product: null as any };
+            }
+          })
+        );
+        const productMap = new Map<string, any>();
+        productResults.forEach(({ pid, product }) => {
+          if (product) productMap.set(pid, product);
+        });
+
+        const mapped: OrderItemView[] = itemDtos.map((it) => {
+          const product = productMap.get(it.product_id);
+          let picture: string | undefined = product?.picture_url;
+          if (picture && !/^https?:\/\//i.test(picture)) {
+            picture = IMAGE_URL_PREFIX + picture.replace(/^\/+/, "");
+          }
+          const status = (it.status as OrderStatus) || "placed";
+          return {
+            id: String(it.product_id),
+            title: product?.title || `Item ${it.product_id}`,
+            price:
+              typeof product?.price === "number"
+                ? product.price
+                : Number(it.unit_price) || 0,
+            imageUrl: picture,
+            status,
+          };
+        });
+
+        const derived = deriveOrderStatusFromItems(
+          itemDtos.map((x) => ({ status: x.status }))
+        );
+
+        setItems(mapped);
+        setOrderStatus(derived);
+      } catch (e: any) {
+        setError(e?.message || "Failed to load order");
+        setItems([]);
+      } finally {
+        if (isRefresh) {
+          setRefreshing(false);
+        } else {
+          setLoading(false);
+        }
+      }
+    },
+    [id, getOrder, getProduct]
+  );
 
   useEffect(() => {
-    loadOrder().then();
+    loadOrder(false);
   }, [loadOrder]);
 
   const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    loadOrder().then();
+    loadOrder(true);
   }, [loadOrder]);
 
   if (loading && !refreshing && !notFound && !error) {
