@@ -38,6 +38,7 @@ class ProductView(APIView):
         responses={
             201: ProductSerializer,
             400: OpenApiResponse(description="product info not complete or no picture uploaded"),
+            401: OpenApiResponse(description='user not authenticated'),
         },
     )
     def post(self, request: Request):

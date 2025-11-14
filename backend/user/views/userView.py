@@ -1,25 +1,29 @@
 import logging
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
+
 from drf_spectacular.utils import extend_schema
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
+
 from user.services.userService import (
     send_verification_code,
     verify_code,
     create_user,
     authenticate_user,
 )
-from ..models import User
 from ..serializers import UserSerializer
-from rest_framework.permissions import IsAuthenticated
 
 logger = logging.getLogger(__name__)
 
 class SendVerificationCodeView(APIView):
     @extend_schema(
         summary="Send verification code to email",
-        request={"type": "object", "properties": {"email": {"type": "string"}}},
+        request={
+            "application/json":
+                {"type": "object", "properties": {"email": {"type": "string"}}}
+        },
         responses={200: {"example": {"message": "Verification code sent"}}},
     )
     def post(self, request):
@@ -37,12 +41,14 @@ class VerifyCodeView(APIView):
     @extend_schema(
         summary="Verify email verification code",
         request={
-            "type": "object",
-            "properties": {
-                "email": {"type": "string"},
-                "code": {"type": "string"},
-            },
-            "required": ["email", "code"],
+            "application/json": {
+                "type": "object",
+                "properties": {
+                    "email": {"type": "string"},
+                    "code": {"type": "string"},
+                },
+                "required": ["email", "code"],
+            }
         },
         responses={200: {"example": {"message": "Verification successful"}}},
     )
@@ -156,7 +162,10 @@ class SigninView(APIView):
 
 class UpdateProfileView(APIView):
     permission_classes = [IsAuthenticated]
-
+    @extend_schema(
+        summary="User Update",
+        request=UserSerializer,
+    )
     def patch(self, request):
         user = request.user
         
