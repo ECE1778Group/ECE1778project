@@ -31,10 +31,6 @@ export const useProductApi = () => {
       const res = await getData(`/api/product/search/?keyword=${encodeURIComponent(q)}`);
       return (res ?? []) as ProductDTO[];
     } catch (e: any) {
-      const msg = (e && e.message ? String(e.message) : "").toLowerCase();
-      if (msg.includes("not found") || msg.includes("404")) {
-        return [];
-      }
       return [];
     }
   };
