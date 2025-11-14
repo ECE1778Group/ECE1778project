@@ -198,7 +198,14 @@ export default function Market() {
       />
 
       {sharePrompt ? (
-        <View style={styles.shareCard}>
+        <Pressable
+          style={styles.shareCard}
+          onPress={() => {
+            const targetId = sharePrompt.id;
+            setSharePrompt(null);
+            router.push({pathname: "/item/[id]", params: {id: targetId}});
+          }}
+        >
           <Text style={styles.shareCardTitle}>Open shared item?</Text>
 
           <View style={styles.shareCardMainRow}>
@@ -212,19 +219,12 @@ export default function Market() {
             <View style={styles.shareCardActions}>
               <Pressable
                 style={[styles.shareCardBtn, styles.shareCardCancel]}
-                onPress={() => setSharePrompt(null)}
-              >
-                <Text style={styles.shareCardCancelText}>Later</Text>
-              </Pressable>
-              <Pressable
-                style={[styles.shareCardBtn, styles.shareCardOpen]}
-                onPress={() => {
-                  const targetId = sharePrompt.id;
+                onPress={(e) => {
+                  e.stopPropagation();
                   setSharePrompt(null);
-                  router.push({pathname: "/item/[id]", params: {id: targetId}});
                 }}
               >
-                <Text style={styles.shareCardOpenText}>Open</Text>
+                <Text style={styles.shareCardCancelText}>Later</Text>
               </Pressable>
             </View>
           </View>
@@ -237,7 +237,7 @@ export default function Market() {
               ]}
             />
           </View>
-        </View>
+        </Pressable>
       ) : null}
 
       <Pressable
