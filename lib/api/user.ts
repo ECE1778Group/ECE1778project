@@ -34,8 +34,7 @@ export const useUserApi = () => {
   };
 
   const updateProfile = async (token: string, fields: any) => {
-    const res = await patchData("/api/user/updateProfile/", fields, token);
-    return res;
+    return await patchData("/api/user/updateProfile/", fields, token);
   };
 
   return {

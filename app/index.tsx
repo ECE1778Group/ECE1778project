@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useRef, useState} from "react";
+import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {FlatList, Pressable, StyleSheet, Text, TextInput, View} from "react-native";
 import {useFocusEffect, useRouter} from "expo-router";
 import * as Clipboard from "expo-clipboard";
@@ -6,6 +6,7 @@ import ItemCard from "../components/ItemCard";
 import CartFab from "../components/CartFab";
 import {globalStyles} from "../styles/globalStyles";
 import {colors} from "../styles/colors";
+import {Slider} from "@miblanchard/react-native-slider";
 import {ArrowDownWideNarrow} from "lucide-react-native";
 import {MarketplaceItem} from "../types";
 import {useProductApi} from "../lib/api/product";
@@ -17,6 +18,10 @@ export default function Market() {
   const [refreshing, setRefreshing] = useState(false);
   const [sharePrompt, setSharePrompt] = useState<{ id: string; title?: string } | null>(null);
   const [shareTimeoutProgress, setShareTimeoutProgress] = useState(1);
+  const [filterVisible, setFilterVisible] = useState(false);
+  const [priceRange, setPriceRange] = useState<{ min: number; max: number } | null>(null);
+  const [selectedMinPrice, setSelectedMinPrice] = useState<number | null>(null);
+  const [selectedMaxPrice, setSelectedMaxPrice] = useState<number | null>(null);
   const router = useRouter();
   const {searchProducts} = useProductApi();
 
@@ -41,14 +46,41 @@ export default function Market() {
     } as MarketplaceItem;
   }, []);
 
+  const applySearchResults = useCallback(
+    (res: any[] | null | undefined) => {
+      const items = (res || []).map(mapToItem);
+      setData(items);
+      if (items.length) {
+        const prices = items.map((item) => item.price || 0);
+        const min = Math.min(...prices);
+        const max = Math.max(...prices);
+        setPriceRange({min, max});
+        setSelectedMinPrice(min);
+        setSelectedMaxPrice(max);
+      } else {
+        setPriceRange(null);
+        setSelectedMinPrice(null);
+        setSelectedMaxPrice(null);
+        setFilterVisible(false);
+      }
+    },
+    [mapToItem]
+  );
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
         const res = await searchProducts("all");
-        if (!cancelled) setData((res || []).map(mapToItem));
+        if (!cancelled) applySearchResults(res);
       } catch {
-        if (!cancelled) setData([]);
+        if (!cancelled) {
+          setData([]);
+          setPriceRange(null);
+          setSelectedMinPrice(null);
+          setSelectedMaxPrice(null);
+          setFilterVisible(false);
+        }
       } finally {
         if (!cancelled) setHasSearched(true);
       }
@@ -56,24 +88,32 @@ export default function Market() {
     return () => {
       cancelled = true;
     };
-  }, [mapToItem, searchProducts]);
+  }, [applySearchResults, searchProducts]);
 
   const handleSearch = useCallback(async () => {
     const q = text.trim();
     if (!q) {
       setData([]);
+      setPriceRange(null);
+      setSelectedMinPrice(null);
+      setSelectedMaxPrice(null);
+      setFilterVisible(false);
       setHasSearched(true);
       return;
     }
     try {
       const res = await searchProducts(q);
-      setData((res || []).map(mapToItem));
+      applySearchResults(res);
     } catch {
       setData([]);
+      setPriceRange(null);
+      setSelectedMinPrice(null);
+      setSelectedMaxPrice(null);
+      setFilterVisible(false);
     } finally {
       setHasSearched(true);
     }
-  }, [text, searchProducts, mapToItem]);
+  }, [text, searchProducts, applySearchResults]);
 
   const handleRefresh = useCallback(async () => {
     const q = text.trim();
@@ -81,14 +121,18 @@ export default function Market() {
     setRefreshing(true);
     try {
       const res = await searchProducts(keyword);
-      setData((res || []).map(mapToItem));
+      applySearchResults(res);
     } catch {
       setData([]);
+      setPriceRange(null);
+      setSelectedMinPrice(null);
+      setSelectedMaxPrice(null);
+      setFilterVisible(false);
     } finally {
       setHasSearched(true);
       setRefreshing(false);
     }
-  }, [text, searchProducts, mapToItem]);
+  }, [text, searchProducts, applySearchResults]);
 
   const checkClipboardForShare = useCallback(async () => {
     try {
@@ -140,11 +184,30 @@ export default function Market() {
     };
   }, [sharePrompt]);
 
+  const filteredData = useMemo(() => {
+    if (!priceRange || selectedMinPrice == null || selectedMaxPrice == null) {
+      return data;
+    }
+    const min = Math.min(selectedMinPrice, selectedMaxPrice);
+    const max = Math.max(selectedMinPrice, selectedMaxPrice);
+    return data.filter((item) => {
+      const price = item.price || 0;
+      return price >= min && price <= max;
+    });
+  }, [data, priceRange, selectedMinPrice, selectedMaxPrice]);
+
   return (
     <View style={globalStyles.container}>
       <View style={styles.searchRow}>
-        <Pressable style={styles.filterButton} onPress={() => {
-        }} accessibilityRole="button" accessibilityLabel="Filter">
+        <Pressable
+          style={styles.filterButton}
+          onPress={() => {
+            if (!priceRange) return;
+            setFilterVisible((v) => !v);
+          }}
+          accessibilityRole="button"
+          accessibilityLabel="Filter"
+        >
           <ArrowDownWideNarrow size={20} color={colors.textPrimary}/>
         </Pressable>
         <TextInput
@@ -160,7 +223,7 @@ export default function Market() {
       </View>
 
       <FlatList
-        data={data}
+        data={filteredData}
         keyExtractor={(item) => item.id}
         renderItem={({item}) => (
           <ItemCard
@@ -237,6 +300,55 @@ export default function Market() {
         </Pressable>
       ) : null}
 
+      {filterVisible && priceRange ? (
+        <View style={styles.filterOverlay}>
+          <Pressable
+            style={StyleSheet.absoluteFill}
+            onPress={() => setFilterVisible(false)}
+          />
+          <View style={styles.filterPanel}>
+            <View style={styles.filterPanelInner}>
+              <Text style={styles.filterTitle}>Price:</Text>
+              <View style={styles.sliderContainer}>
+                <Slider
+                  value={[
+                    selectedMinPrice ?? priceRange.min,
+                    selectedMaxPrice ?? priceRange.max,
+                  ]}
+                  minimumValue={priceRange.min}
+                  maximumValue={priceRange.max}
+                  step={1}
+                  minimumTrackTintColor={colors.primary}
+                  maximumTrackTintColor={colors.primary}
+                  thumbTintColor={colors.primary}
+                  onValueChange={(values) => {
+                    if (!Array.isArray(values) || values.length < 2) return;
+                    let [minVal, maxVal] = values;
+                    if (minVal > maxVal) {
+                      const tmp = minVal;
+                      minVal = maxVal;
+                      maxVal = tmp;
+                    }
+                    const clampedMin = Math.max(priceRange.min, Math.min(minVal, priceRange.max));
+                    const clampedMax = Math.max(clampedMin, Math.min(maxVal, priceRange.max));
+                    setSelectedMinPrice(clampedMin);
+                    setSelectedMaxPrice(clampedMax);
+                  }}
+                />
+              </View>
+              <View style={styles.priceLabelsRow}>
+                <Text style={styles.priceLabel}>
+                  {selectedMinPrice != null ? `$${selectedMinPrice}` : `$${priceRange.min}`}
+                </Text>
+                <Text style={styles.priceLabel}>
+                  {selectedMaxPrice != null ? `$${selectedMaxPrice}` : `$${priceRange.max}`}
+                </Text>
+              </View>
+            </View>
+          </View>
+        </View>
+      ) : null}
+
       <View style={styles.fabWrapper}>
         <CartFab/>
       </View>
@@ -269,6 +381,47 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 8,
+  },
+  filterOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.25)",
+    justifyContent: "flex-start",
+  },
+  filterPanel: {
+    paddingHorizontal: 16,
+    paddingTop: 4,
+  },
+  filterPanelInner: {
+    backgroundColor: colors.white,
+    borderColor: colors.border,
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginTop: 24,
+  },
+  filterTitle: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: colors.textPrimary,
+    marginBottom: 6,
+  },
+  sliderContainer: {
+    width: "100%",
+  },
+  priceLabelsRow: {
+    marginTop: 4,
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  priceLabel: {
+    fontSize: 14,
+    color: colors.textPrimary,
+    fontWeight: "500",
   },
   emptyWrap: {
     flex: 1,
@@ -331,19 +484,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     borderColor: colors.border,
   },
-  shareCardOpen: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
   shareCardCancelText: {
     color: colors.textPrimary,
     fontSize: 12,
     fontWeight: "600",
-  },
-  shareCardOpenText: {
-    color: colors.white,
-    fontSize: 12,
-    fontWeight: "700",
   },
   shareCardProgressTrack: {
     marginTop: 4,
