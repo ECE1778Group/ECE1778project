@@ -1,14 +1,7 @@
-import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import React, {createContext, useContext, useEffect, useMemo, useRef, useState,} from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useUserApi } from "../lib/api/user";
-import { IUser } from "../interfaces/User.interface";
+import {useUserApi} from "../lib/api/user";
+import {IUser} from "../interfaces/User.interface";
 
 /* ========================================================
    Dummy user (初始空用户对象)
@@ -39,15 +32,19 @@ const AuthContext = createContext<AuthContextType>({
   user: dummyUser,
   isAuthLoading: true,
   isLoggingOut: false,
-  login: async () => {},
-  logout: async () => {},
-  verifyAuth: async () => ({ isAuthenticated: false }),
-  updateUser: () => {},
-  skip: () => {},
+  login: async () => {
+  },
+  logout: async () => {
+  },
+  verifyAuth: async () => ({isAuthenticated: false}),
+  updateUser: () => {
+  },
+  skip: () => {
+  },
 });
 
-export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const { signin, verifyToken, refreshToken, updateProfile } = useUserApi();
+export const AuthProvider = ({children}: { children: React.ReactNode }) => {
+  const {signin, verifyToken, refreshToken, updateProfile} = useUserApi();
 
   const [loggedIn, setLoggedIn] = useState(false);
   const [user, setUser] = useState<IUser>(dummyUser);
@@ -100,7 +97,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (!access || !refresh || !storedUser) {
         setLoggedIn(false);
         setUser(dummyUser);
-        return { isAuthenticated: false };
+        return {isAuthenticated: false};
       }
 
       const verifyRes = await verifyToken(access);
@@ -108,7 +105,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const parsedUser = JSON.parse(storedUser);
         setUser(parsedUser);
         setLoggedIn(true);
-        return { isAuthenticated: true, user: parsedUser };
+        return {isAuthenticated: true, user: parsedUser};
       }
 
       const refreshRes = await refreshToken(refresh);
@@ -117,17 +114,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const parsedUser = JSON.parse(storedUser);
         setUser(parsedUser);
         setLoggedIn(true);
-        return { isAuthenticated: true, user: parsedUser };
+        return {isAuthenticated: true, user: parsedUser};
       }
 
       await AsyncStorage.multiRemove(["access", "refresh", "user"]);
       setUser(dummyUser);
       setLoggedIn(false);
-      return { isAuthenticated: false };
+      return {isAuthenticated: false};
     } catch (err) {
       setUser(dummyUser);
       setLoggedIn(false);
-      return { isAuthenticated: false };
+      return {isAuthenticated: false};
     } finally {
       setIsAuthLoading(false);
     }
@@ -136,7 +133,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const updateUser = (fields: Partial<IUser>) => {
     setUser((prev) => {
-      const updated = { ...prev, ...fields };
+      const updated = {...prev, ...fields};
       AsyncStorage.setItem("user", JSON.stringify(updated));
       return updated;
     });

@@ -1,5 +1,5 @@
-import { StyleSheet } from "react-native";
-import { colors } from "./colors";
+import {StyleSheet} from "react-native";
+import {colors} from "./colors";
 
 export const globalStyles = StyleSheet.create({
   container: {
@@ -25,7 +25,7 @@ export const globalStyles = StyleSheet.create({
     marginVertical: 6,
   },
   cardPressed: {
-    transform: [{ scale: 0.99 }],
+    transform: [{scale: 0.99}],
   },
   mediaBase: {
     borderRadius: 8,
@@ -71,7 +71,6 @@ export const globalStyles = StyleSheet.create({
     paddingVertical: 4,
   },
 
-  // 布局/表单类复用
   center: {
     alignItems: "center",
     justifyContent: "center",

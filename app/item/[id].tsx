@@ -1,16 +1,5 @@
 import React, {useEffect, useRef, useState} from "react";
-import {
-  Alert,
-  Animated,
-  Easing,
-  Image,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-  Share,
-} from "react-native";
+import {Alert, Animated, Easing, Image, Pressable, ScrollView, Share, StyleSheet, Text, View,} from "react-native";
 import {useLocalSearchParams, useRouter} from "expo-router";
 import * as Clipboard from "expo-clipboard";
 import {globalStyles} from "../../styles/globalStyles";

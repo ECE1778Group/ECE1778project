@@ -1,5 +1,6 @@
 import React, {useEffect, useMemo, useRef, useState} from "react";
 import {
+  Alert,
   Dimensions,
   FlatList,
   Image,
@@ -10,8 +11,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  View,
-  Alert
+  View
 } from "react-native";
 import {useLocalSearchParams} from "expo-router";
 import {globalStyles} from "../../styles/globalStyles";
@@ -19,7 +19,7 @@ import {colors} from "../../styles/colors";
 import * as ImagePicker from "expo-image-picker";
 import * as Location from "expo-location";
 import MapView, {Marker, Region} from "react-native-maps";
-import {Camera, Image as ImageIcon, MapPin, Plus, Send, CheckCircle2} from "lucide-react-native";
+import {Camera, CheckCircle2, Image as ImageIcon, MapPin, Plus, Send} from "lucide-react-native";
 
 type Msg =
   | { id: string; from: "me" | "peer"; text: string; ts: number }

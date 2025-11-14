@@ -1,14 +1,14 @@
-import { useFetch } from "./fetch-client";
+import {useFetch} from "./fetch-client";
 
 export const useUserApi = () => {
-  const { postData, patchData } = useFetch();
+  const {postData, patchData} = useFetch();
 
   const sendVerificationCode = async (email: string) => {
-    return await postData("/api/user/sendVerificationCode/", { email });
+    return await postData("/api/user/sendVerificationCode/", {email});
   };
 
   const verifyCode = async (email: string, code: string) => {
-    return await postData("/api/user/verifyCode/", { email, code });
+    return await postData("/api/user/verifyCode/", {email, code});
   };
 
   const signup = async (userData: {
@@ -22,15 +22,15 @@ export const useUserApi = () => {
   };
 
   const signin = async (email: string, password: string) => {
-    return await postData("/api/user/signin/", { email, password });
+    return await postData("/api/user/signin/", {email, password});
   };
 
   const verifyToken = async (access: string) => {
-    return await postData("/api/token/verify/", { token: access });
+    return await postData("/api/token/verify/", {token: access});
   };
 
   const refreshToken = async (refresh: string) => {
-    return await postData("/api/token/refresh/", { refresh });
+    return await postData("/api/token/refresh/", {refresh});
   };
 
   const updateProfile = async (token: string, fields: any) => {

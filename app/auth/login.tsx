@@ -1,16 +1,16 @@
-import React, { useState, useMemo } from "react";
-import { View, StyleSheet } from "react-native";
-import { TextInput, Button, Text, Divider } from "react-native-paper";
-import { useRouter } from "expo-router";
-import { useAuth } from "../../contexts/AuthContext";
-import { colors } from "../../styles/colors";
-import { useMessage } from "../../contexts/MessageContext";
+import React, {useMemo, useState} from "react";
+import {StyleSheet, View} from "react-native";
+import {Button, Divider, Text, TextInput} from "react-native-paper";
+import {useRouter} from "expo-router";
+import {useAuth} from "../../contexts/AuthContext";
+import {colors} from "../../styles/colors";
+import {useMessage} from "../../contexts/MessageContext";
 import {globalStyles} from "../../styles/globalStyles";
 
 export default function Login() {
   const router = useRouter();
-  const { login, skip } = useAuth();
-  const { showMessage } = useMessage();
+  const {login, skip} = useAuth();
+  const {showMessage} = useMessage();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -53,19 +53,19 @@ export default function Login() {
         onChangeText={setEmail}
         keyboardType="email-address"
         autoCapitalize="none"
-        autoComplete="off"         
-        textContentType="none" 
-        autoCorrect={false}   
-        importantForAutofill="no" 
+        autoComplete="off"
+        textContentType="none"
+        autoCorrect={false}
+        importantForAutofill="no"
         style={styles.input}
       />
       <TextInput
         label="Password"
         value={password}
         onChangeText={setPassword}
-        autoComplete="off"         
-        textContentType="none" 
-        autoCorrect={false}   
+        autoComplete="off"
+        textContentType="none"
+        autoCorrect={false}
         importantForAutofill="no"
         secureTextEntry
         style={styles.input}
@@ -80,7 +80,7 @@ export default function Login() {
         Sign In
       </Button>
 
-      <Divider style={styles.divider} />
+      <Divider style={styles.divider}/>
 
       <Button mode="outlined" onPress={handleSignup} style={styles.button}>
         Create an Account

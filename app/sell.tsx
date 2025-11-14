@@ -1,18 +1,30 @@
-import React, { useMemo, useRef, useState, useEffect } from "react";
-import { View, Text, TextInput, Pressable, StyleSheet, Alert, Image, ScrollView, Modal, Animated, PanResponder } from "react-native";
+import React, {useEffect, useMemo, useRef, useState} from "react";
+import {
+  Alert,
+  Animated,
+  Image,
+  Modal,
+  PanResponder,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View
+} from "react-native";
 import * as ImagePicker from "expo-image-picker";
-import { useRouter } from "expo-router";
-import { globalStyles } from "../styles/globalStyles";
-import { colors } from "../styles/colors";
-import { ItemKind } from "../types";
-import { useAuth } from "../contexts/AuthContext";
-import { useProductApi } from "../lib/api/product";
-import { Plus, X, Camera, Image as ImageIcon } from "lucide-react-native";
+import {useRouter} from "expo-router";
+import {globalStyles} from "../styles/globalStyles";
+import {colors} from "../styles/colors";
+import {ItemKind} from "../types";
+import {useAuth} from "../contexts/AuthContext";
+import {useProductApi} from "../lib/api/product";
+import {Camera, Image as ImageIcon, Plus, X} from "lucide-react-native";
 
 export default function Sell() {
   const router = useRouter();
-  const { user } = useAuth();
-  const { addProduct } = useProductApi();
+  const {user} = useAuth();
+  const {addProduct} = useProductApi();
 
   const [kind, setKind] = useState<ItemKind>("book");
   const [title, setTitle] = useState("");
@@ -47,7 +59,7 @@ export default function Sell() {
   };
 
   const pickFromLibrary = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    const {status} = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
       Alert.alert("Permission required", "Please enable photo library access to select photos.");
       return;
@@ -93,15 +105,15 @@ export default function Sell() {
     fade.setValue(0);
     sheetY.setValue(300);
     Animated.parallel([
-      Animated.timing(fade, { toValue: 1, duration: 180, useNativeDriver: true }),
-      Animated.timing(sheetY, { toValue: 0, duration: 220, useNativeDriver: true }),
+      Animated.timing(fade, {toValue: 1, duration: 180, useNativeDriver: true}),
+      Animated.timing(sheetY, {toValue: 0, duration: 220, useNativeDriver: true}),
     ]).start();
   };
 
   const closePickerSheet = (cb?: () => void) => {
     Animated.parallel([
-      Animated.timing(fade, { toValue: 0, duration: 160, useNativeDriver: true }),
-      Animated.timing(sheetY, { toValue: 300, duration: 200, useNativeDriver: true }),
+      Animated.timing(fade, {toValue: 0, duration: 160, useNativeDriver: true}),
+      Animated.timing(sheetY, {toValue: 300, duration: 200, useNativeDriver: true}),
     ]).start(() => {
       setPickerOpen(false);
       if (cb) cb();
@@ -123,7 +135,7 @@ export default function Sell() {
         if (g.dy > 80 || g.vy > 0.8) {
           closePickerSheet();
         } else {
-          Animated.timing(sheetY, { toValue: 0, duration: 180, useNativeDriver: true }).start();
+          Animated.timing(sheetY, {toValue: 0, duration: 180, useNativeDriver: true}).start();
         }
       },
     })
@@ -133,7 +145,7 @@ export default function Sell() {
     setImages(prev => prev.filter(u => u !== uri));
   };
 
-    const submit = async () => {
+  const submit = async () => {
     if (!canSubmit) return;
 
     try {
@@ -162,7 +174,7 @@ export default function Sell() {
   }, []);
 
   return (
-    <View style={[globalStyles.container, { paddingHorizontal: 16, paddingTop: 12 }]}>
+    <View style={[globalStyles.container, {paddingHorizontal: 16, paddingTop: 12}]}>
       <Text style={styles.title}>Create a Listing</Text>
 
       <View style={styles.segment}>
@@ -192,7 +204,7 @@ export default function Sell() {
       </View>
 
       <View style={styles.row}>
-        <View style={[styles.field, { flex: 1, marginRight: 6 }]}>
+        <View style={[styles.field, {flex: 1, marginRight: 6}]}>
           <Text style={styles.label}>Price</Text>
           <TextInput
             style={styles.input}
@@ -203,7 +215,7 @@ export default function Sell() {
             placeholderTextColor={colors.placeholder}
           />
         </View>
-        <View style={[styles.field, { flex: 1, marginLeft: 6 }]}>
+        <View style={[styles.field, {flex: 1, marginLeft: 6}]}>
           <Text style={styles.label}>Stock</Text>
           <TextInput
             style={styles.input}
@@ -271,13 +283,14 @@ export default function Sell() {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.gallery}
         >
-          <Pressable style={styles.addBox} onPress={openPickerSheet} accessibilityRole="button" accessibilityLabel="Add photos">
-            <Plus size={28} color={colors.placeholder} />
+          <Pressable style={styles.addBox} onPress={openPickerSheet} accessibilityRole="button"
+                     accessibilityLabel="Add photos">
+            <Plus size={28} color={colors.placeholder}/>
           </Pressable>
 
           {images.map((uri) => (
             <View key={uri} style={styles.photoWrap}>
-              <Image source={{ uri }} style={styles.photo} />
+              <Image source={{uri}} style={styles.photo}/>
               <Pressable
                 onPress={() => removeImage(uri)}
                 hitSlop={10}
@@ -285,7 +298,7 @@ export default function Sell() {
                 accessibilityRole="button"
                 accessibilityLabel="Remove photo"
               >
-                <X size={12} color={colors.textPrimary} />
+                <X size={12} color={colors.textPrimary}/>
               </Pressable>
             </View>
           ))}
@@ -301,20 +314,22 @@ export default function Sell() {
       </Pressable>
 
       <Modal visible={pickerOpen} transparent animationType="none" onRequestClose={() => closePickerSheet()}>
-        <Animated.View style={[styles.backdrop, { opacity: fade }]}>
+        <Animated.View style={[styles.backdrop, {opacity: fade}]}>
           <Pressable style={StyleSheet.absoluteFill} onPress={() => closePickerSheet()}/>
         </Animated.View>
-        <Animated.View style={[styles.sheet, { transform: [{ translateY: sheetY }] }]}>
+        <Animated.View style={[styles.sheet, {transform: [{translateY: sheetY}]}]}>
           <View style={styles.sheetGrab} {...drag.panHandlers}>
             <View style={styles.sheetHandle}/>
           </View>
           <Text style={styles.sheetTitle}>Add Photo</Text>
-          <Pressable style={styles.sheetAction} onPress={() => closePickerSheet(pickFromCamera)} accessibilityRole="button" accessibilityLabel="Open camera">
-            <Camera size={18} color={colors.textPrimary} />
+          <Pressable style={styles.sheetAction} onPress={() => closePickerSheet(pickFromCamera)}
+                     accessibilityRole="button" accessibilityLabel="Open camera">
+            <Camera size={18} color={colors.textPrimary}/>
             <Text style={styles.sheetActionLabel}>Camera</Text>
           </Pressable>
-          <Pressable style={styles.sheetAction} onPress={() => closePickerSheet(pickFromLibrary)} accessibilityRole="button" accessibilityLabel="Open photo library">
-            <ImageIcon size={18} color={colors.textPrimary} />
+          <Pressable style={styles.sheetAction} onPress={() => closePickerSheet(pickFromLibrary)}
+                     accessibilityRole="button" accessibilityLabel="Open photo library">
+            <ImageIcon size={18} color={colors.textPrimary}/>
             <Text style={styles.sheetActionLabel}>Photo Library</Text>
           </Pressable>
         </Animated.View>

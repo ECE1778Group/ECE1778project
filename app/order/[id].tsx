@@ -1,19 +1,13 @@
-import React, { useCallback, useEffect, useState } from "react";
-import {
-  FlatList,
-  RefreshControl,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { globalStyles } from "../../styles/globalStyles";
-import { colors } from "../../styles/colors";
+import React, {useCallback, useEffect, useState} from "react";
+import {FlatList, RefreshControl, StyleSheet, Text, View,} from "react-native";
+import {useLocalSearchParams, useRouter} from "expo-router";
+import {globalStyles} from "../../styles/globalStyles";
+import {colors} from "../../styles/colors";
 import ItemCard from "../../components/ItemCard";
-import { deriveOrderStatusFromItems, useOrderApi } from "../../lib/api/order";
-import { useProductApi } from "../../lib/api/product";
-import { OrderStatus } from "../../types";
-import { IMAGE_URL_PREFIX } from "../../constant";
+import {deriveOrderStatusFromItems, useOrderApi} from "../../lib/api/order";
+import {useProductApi} from "../../lib/api/product";
+import {OrderStatus} from "../../types";
+import {IMAGE_URL_PREFIX} from "../../constant";
 
 
 type OrderItemView = {
@@ -25,10 +19,10 @@ type OrderItemView = {
 };
 
 export default function OrderDetail() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const {id} = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { getOrder } = useOrderApi();
-  const { getProduct } = useProductApi();
+  const {getOrder} = useOrderApi();
+  const {getProduct} = useProductApi();
 
   const [items, setItems] = useState<OrderItemView[]>([]);
   const [orderStatus, setOrderStatus] = useState<OrderStatus>("placed");
@@ -70,14 +64,14 @@ export default function OrderDetail() {
           productIds.map(async (pid) => {
             try {
               const p = await getProduct(pid);
-              return { pid, product: p };
+              return {pid, product: p};
             } catch {
-              return { pid, product: null as any };
+              return {pid, product: null as any};
             }
           })
         );
         const productMap = new Map<string, any>();
-        productResults.forEach(({ pid, product }) => {
+        productResults.forEach(({pid, product}) => {
           if (product) productMap.set(pid, product);
         });
 
@@ -101,7 +95,7 @@ export default function OrderDetail() {
         });
 
         const derived = deriveOrderStatusFromItems(
-          itemDtos.map((x) => ({ status: x.status }))
+          itemDtos.map((x) => ({status: x.status}))
         );
 
         setItems(mapped);
@@ -161,15 +155,15 @@ export default function OrderDetail() {
           {orderStatus === "placed"
             ? "Placed"
             : orderStatus === "completed"
-            ? "Completed"
-            : "Cancelled"}
+              ? "Completed"
+              : "Cancelled"}
         </Text>
       </View>
 
       <FlatList
         data={items}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
+        renderItem={({item}) => (
           <ItemCard
             id={item.id}
             title={item.title}
@@ -177,13 +171,13 @@ export default function OrderDetail() {
             imageUrl={item.imageUrl}
             orderStatus={item.status}
             onPress={() =>
-              router.push({ pathname: "/chat/[id]", params: { id: item.id } })
+              router.push({pathname: "/chat/[id]", params: {id: item.id}})
             }
           />
         )}
-        contentContainerStyle={{ paddingVertical: 8, paddingBottom: 8 }}
+        contentContainerStyle={{paddingVertical: 8, paddingBottom: 8}}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh}/>
         }
       />
     </View>

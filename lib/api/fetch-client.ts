@@ -1,7 +1,7 @@
 // lib/api/fetch-client.ts
-import { useState, useCallback } from "react";
+import {useCallback, useState} from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { BASE_URL } from "../../constant";
+import {BASE_URL} from "../../constant";
 
 export const useFetch = () => {
   const [loading, setLoading] = useState(false);
@@ -12,7 +12,7 @@ export const useFetch = () => {
       setLoading(true);
       setError(null);
       try {
-        const headers: Record<string, string> = { "Content-Type": "application/json" };
+        const headers: Record<string, string> = {"Content-Type": "application/json"};
 
         const finalToken = token ?? await AsyncStorage.getItem("access") as string;
         if (finalToken) {
@@ -68,5 +68,5 @@ export const useFetch = () => {
     [request]
   );
 
-  return { loading, error, getData, postData, patchData, putData, deleteData };
+  return {loading, error, getData, postData, patchData, putData, deleteData};
 };

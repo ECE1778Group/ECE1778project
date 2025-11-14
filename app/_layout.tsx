@@ -1,13 +1,13 @@
 import React, {useEffect} from "react";
-import {Redirect, Tabs, useRouter, useSegments} from "expo-router";
+import {Tabs, useRouter, useSegments} from "expo-router";
 import {CartProvider} from "../contexts/CartContext";
 import {AuthProvider, useAuth} from "../contexts/AuthContext";
 import {ProfileProvider} from "../contexts/ProfileContext";
 import {ArrowLeft, Package, Store, Tag, User} from "lucide-react-native";
 import {Pressable} from "react-native";
 import {colors} from "../styles/colors";
-import { PaperProvider } from "react-native-paper";
-import { MessageProvider } from "../contexts/MessageContext";
+import {PaperProvider} from "react-native-paper";
+import {MessageProvider} from "../contexts/MessageContext";
 import * as Notifications from "expo-notifications";
 import {ensureNotificationSetup} from "../lib/api/notifications";
 

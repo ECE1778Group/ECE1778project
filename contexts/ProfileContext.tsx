@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useMemo, useState } from "react";
+import React, {createContext, useContext, useMemo, useState} from "react";
 
 export type Profile = {
   name: string;
@@ -23,19 +23,22 @@ const defaultProfile: Profile = {
 
 const ProfileCtx = createContext<Ctx>({
   profile: defaultProfile,
-  setProfile: () => {},
-  update: () => {},
-  reset: () => {},
+  setProfile: () => {
+  },
+  update: () => {
+  },
+  reset: () => {
+  },
 });
 
-export function ProfileProvider({ children }: { children: React.ReactNode }) {
+export function ProfileProvider({children}: { children: React.ReactNode }) {
   const [profile, setProfileState] = useState<Profile>(defaultProfile);
 
   const setProfile = (p: Profile) => setProfileState(p);
-  const update = (p: Partial<Profile>) => setProfileState((prev) => ({ ...prev, ...p }));
+  const update = (p: Partial<Profile>) => setProfileState((prev) => ({...prev, ...p}));
   const reset = () => setProfileState(defaultProfile);
 
-  const value = useMemo(() => ({ profile, setProfile, update, reset }), [profile]);
+  const value = useMemo(() => ({profile, setProfile, update, reset}), [profile]);
 
   return <ProfileCtx.Provider value={value}>{children}</ProfileCtx.Provider>;
 }

@@ -1,8 +1,8 @@
 // lib/api/product.ts
-import { useCallback } from "react";
+import {useCallback} from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useFetch } from "./fetch-client";
-import { BASE_URL } from "../../constant";
+import {useFetch} from "./fetch-client";
+import {BASE_URL} from "../../constant";
 
 type ProductDTO = {
   id: string;
@@ -25,7 +25,7 @@ type CreateProductDTO = {
 };
 
 export const useProductApi = () => {
-  const { getData } = useFetch();
+  const {getData} = useFetch();
 
   const searchProducts = useCallback(
     async (keyword: string) => {
@@ -115,5 +115,5 @@ export const useProductApi = () => {
     []
   );
 
-  return { searchProducts, getProduct, addProduct };
+  return {searchProducts, getProduct, addProduct};
 };

@@ -1,9 +1,9 @@
-import React, { useMemo } from "react";
-import { Image, Pressable, StyleSheet, Text, View } from "react-native";
-import { useRouter } from "expo-router";
-import { colors } from "../styles/colors";
-import { IMAGE_URL_PREFIX } from "../constant";
-import { OrderStatus } from "../types";
+import React, {useMemo} from "react";
+import {Image, Pressable, StyleSheet, Text, View} from "react-native";
+import {useRouter} from "expo-router";
+import {colors} from "../styles/colors";
+import {IMAGE_URL_PREFIX} from "../constant";
+import {OrderStatus} from "../types";
 import {globalStyles} from "../styles/globalStyles";
 
 export type ItemCardProps = {
@@ -36,7 +36,7 @@ function formatTimeAgo(d?: string | number | Date) {
 }
 
 export default function ItemCard(props: ItemCardProps) {
-  const { id, title, price, imageUrl, distanceKm, courseCode, createdAt, onPress, orderStatus } = props;
+  const {id, title, price, imageUrl, distanceKm, courseCode, createdAt, onPress, orderStatus} = props;
   const router = useRouter();
   const timeAgo = useMemo(() => formatTimeAgo(createdAt), [createdAt]);
   const priceText = useMemo(() => formatPrice(price), [price]);
@@ -61,27 +61,27 @@ export default function ItemCard(props: ItemCardProps) {
   const statusStyle = useMemo(() => {
     if (!orderStatus) return null;
     if (orderStatus === "cancelled")
-      return { bg: colors.danger, fg: colors.white, border: colors.danger };
+      return {bg: colors.danger, fg: colors.white, border: colors.danger};
     if (orderStatus === "completed")
-      return { bg: colors.background, fg: colors.textPrimary, border: colors.border };
-    return { bg: colors.primary, fg: colors.white, border: colors.primary };
+      return {bg: colors.background, fg: colors.textPrimary, border: colors.border};
+    return {bg: colors.primary, fg: colors.white, border: colors.primary};
   }, [orderStatus]);
 
   const handlePress = () => {
     if (onPress) onPress();
-    else router.push({ pathname: "/item/[id]", params: { id } });
+    else router.push({pathname: "/item/[id]", params: {id}});
   };
 
   return (
     <Pressable
       onPress={handlePress}
-      style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
+      style={({pressed}) => [styles.card, pressed && styles.cardPressed]}
       accessibilityRole="button"
     >
       <View style={styles.row}>
         <View style={styles.media}>
           {displayUrl ? (
-            <Image source={{ uri: displayUrl }} style={styles.image} resizeMode="cover" />
+            <Image source={{uri: displayUrl}} style={styles.image} resizeMode="cover"/>
           ) : (
             <View style={styles.imagePlaceholder}>
               <Text style={styles.imagePlaceholderText}>No Image</Text>
@@ -117,10 +117,10 @@ export default function ItemCard(props: ItemCardProps) {
               <View
                 style={[
                   styles.statusPill,
-                  { backgroundColor: statusStyle.bg, borderColor: statusStyle.border },
+                  {backgroundColor: statusStyle.bg, borderColor: statusStyle.border},
                 ]}
               >
-                <Text style={[styles.statusPillText, { color: statusStyle.fg }]}>
+                <Text style={[styles.statusPillText, {color: statusStyle.fg}]}>
                   {statusText}
                 </Text>
               </View>

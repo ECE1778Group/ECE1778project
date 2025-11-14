@@ -1,5 +1,5 @@
 import * as Notifications from "expo-notifications";
-import { Platform } from "react-native";
+import {Platform} from "react-native";
 
 type OrderPlacedPayload = {
   order_number: string;
@@ -27,7 +27,7 @@ export async function ensureNotificationSetup() {
     }),
   });
 
-  const { status } = await Notifications.getPermissionsAsync();
+  const {status} = await Notifications.getPermissionsAsync();
   if (status !== "granted") {
     await Notifications.requestPermissionsAsync();
   }
@@ -48,8 +48,8 @@ export async function notifyOrderPlaced(data: OrderPlacedPayload) {
   const amount =
     typeof data.total_amount === "number"
       ? `$${Number(data.total_amount).toFixed(
-          Number(data.total_amount) % 1 === 0 ? 0 : 2
-        )}`
+        Number(data.total_amount) % 1 === 0 ? 0 : 2
+      )}`
       : "";
   await Notifications.scheduleNotificationAsync({
     content: {

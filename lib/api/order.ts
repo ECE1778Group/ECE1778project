@@ -1,8 +1,8 @@
 // lib/api/order.ts
-import { useCallback } from "react";
-import { useFetch } from "./fetch-client";
-import { notifyOrderStatus } from "./notifications";
-import { OrderStatus } from "../../types";
+import {useCallback} from "react";
+import {useFetch} from "./fetch-client";
+import {notifyOrderStatus} from "./notifications";
+import {OrderStatus} from "../../types";
 
 type CreateOrderItem = {
   product_id: string;
@@ -72,11 +72,11 @@ export function getOrderStatus(orderNumber: string, fallback: OrderStatus = "pla
 
 export async function setOrderStatus(orderNumber: string, status: OrderStatus) {
   memoryStore.set(orderNumber, status);
-  await notifyOrderStatus({ order_number: orderNumber, status });
+  await notifyOrderStatus({order_number: orderNumber, status});
 }
 
 export function useOrderApi() {
-  const { getData, postData } = useFetch();
+  const {getData, postData} = useFetch();
 
   const createOrder = useCallback(
     async (body: CreateOrderRequest): Promise<CreateOrderResponse> => {
@@ -113,5 +113,5 @@ export function useOrderApi() {
     [getData]
   );
 
-  return { createOrder, listOrders, getOrder };
+  return {createOrder, listOrders, getOrder};
 }

@@ -1,6 +1,6 @@
-import React, { useMemo } from "react";
-import { View, Text, Image, Pressable, StyleSheet } from "react-native";
-import { colors } from "../styles/colors";
+import React, {useMemo} from "react";
+import {Image, Pressable, StyleSheet, Text, View} from "react-native";
+import {colors} from "../styles/colors";
 import {globalStyles} from "../styles/globalStyles";
 
 export type OrderCardProps = {
@@ -21,19 +21,19 @@ function formatTime(d?: string | number | Date) {
 }
 
 export default function OrderCard(props: OrderCardProps) {
-  const { id, items, createdAt, status, onPress } = props;
+  const {id, items, createdAt, status, onPress} = props;
 
   const stack = useMemo(() => items.slice(0, 3).map((x) => x.imageUrl).filter(Boolean) as string[], [items]);
   const statusText = useMemo(
-    () => ({ placed: "Placed", completed: "Completed", cancelled: "Cancelled" }[status]),
+    () => ({placed: "Placed", completed: "Completed", cancelled: "Cancelled"}[status]),
     [status]
   );
   const timeText = useMemo(() => formatTime(createdAt), [createdAt]);
 
   const statusStyle = useMemo(() => {
-    if (status === "cancelled") return { bg: colors.danger, fg: colors.white, border: colors.danger };
-    if (status === "completed") return { bg: colors.background, fg: colors.textPrimary, border: colors.border };
-    return { bg: colors.primary, fg: colors.white, border: colors.primary };
+    if (status === "cancelled") return {bg: colors.danger, fg: colors.white, border: colors.danger};
+    if (status === "completed") return {bg: colors.background, fg: colors.textPrimary, border: colors.border};
+    return {bg: colors.primary, fg: colors.white, border: colors.primary};
   }, [status]);
 
   const handlePress = () => {
@@ -41,19 +41,21 @@ export default function OrderCard(props: OrderCardProps) {
   };
 
   return (
-    <Pressable onPress={handlePress} style={({ pressed }) => [styles.card, pressed && styles.cardPressed]} accessibilityRole="button">
+    <Pressable onPress={handlePress} style={({pressed}) => [styles.card, pressed && styles.cardPressed]}
+               accessibilityRole="button">
       <View style={styles.row}>
         <View style={styles.mediaStack}>
           {stack.length === 0 ? (
-            <View style={[styles.stackItem, { left: 24, backgroundColor: colors.background, borderColor: colors.border }]}>
+            <View
+              style={[styles.stackItem, {left: 24, backgroundColor: colors.background, borderColor: colors.border}]}>
               <Text style={styles.placeholderText}>No Image</Text>
             </View>
           ) : (
             stack.map((uri, i) => (
               <Image
                 key={`${id}-${i}`}
-                source={{ uri }}
-                style={[styles.stackItem, { left: i * 12, zIndex: 100 - i }]}
+                source={{uri}}
+                style={[styles.stackItem, {left: i * 12, zIndex: 100 - i}]}
                 resizeMode="cover"
               />
             ))
@@ -63,8 +65,8 @@ export default function OrderCard(props: OrderCardProps) {
         <View style={styles.info}>
           <Text style={styles.title}>Order {id}</Text>
           <Text style={styles.time}>{timeText}</Text>
-          <View style={[styles.statusBadge, { backgroundColor: statusStyle.bg, borderColor: statusStyle.border }]}>
-            <Text style={[styles.statusText, { color: statusStyle.fg }]}>{statusText}</Text>
+          <View style={[styles.statusBadge, {backgroundColor: statusStyle.bg, borderColor: statusStyle.border}]}>
+            <Text style={[styles.statusText, {color: statusStyle.fg}]}>{statusText}</Text>
           </View>
         </View>
       </View>

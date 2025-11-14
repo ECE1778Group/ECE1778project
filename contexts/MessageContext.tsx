@@ -1,7 +1,7 @@
-import React, { createContext, useContext, useState, ReactNode } from "react";
-import { Snackbar, Portal } from "react-native-paper";
-import { View, StyleSheet } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import React, {createContext, ReactNode, useContext, useState} from "react";
+import {Portal, Snackbar} from "react-native-paper";
+import {StyleSheet, View} from "react-native";
+import {useSafeAreaInsets} from "react-native-safe-area-context";
 
 type MessageType = "success" | "error" | "info";
 
@@ -18,7 +18,7 @@ interface MessageContextType {
 
 const MessageContext = createContext<MessageContextType | null>(null);
 
-export const MessageProvider = ({ children }: { children: ReactNode }) => {
+export const MessageProvider = ({children}: { children: ReactNode }) => {
   const insets = useSafeAreaInsets();
   const [state, setState] = useState<MessageState>({
     visible: false,
@@ -27,21 +27,21 @@ export const MessageProvider = ({ children }: { children: ReactNode }) => {
   });
 
   const showMessage = (message: string, type: MessageType = "info") => {
-    setState({ visible: true, message, type });
+    setState({visible: true, message, type});
   };
 
-  const hideMessage = () => setState((prev) => ({ ...prev, visible: false }));
+  const hideMessage = () => setState((prev) => ({...prev, visible: false}));
 
   const backgroundColor =
     state.type === "success"
       ? "#4CAF50"
       : state.type === "error"
-      ? "#F44336"
-      : "#2196F3";
+        ? "#F44336"
+        : "#2196F3";
 
   return (
-    <MessageContext.Provider value={{ showMessage, hideMessage }}>
-      <View style={{ flex: 1 }}>{children}</View>
+    <MessageContext.Provider value={{showMessage, hideMessage}}>
+      <View style={{flex: 1}}>{children}</View>
 
       <Portal>
         <Snackbar
@@ -50,12 +50,12 @@ export const MessageProvider = ({ children }: { children: ReactNode }) => {
           duration={3000}
           style={[
             styles.snackbar,
-            { backgroundColor, bottom: insets.bottom + 20 }, 
+            {backgroundColor, bottom: insets.bottom + 20},
           ]}
           action={{
             label: "OK",
             onPress: hideMessage,
-            labelStyle: { color: "white" },
+            labelStyle: {color: "white"},
           }}
         >
           {state.message}

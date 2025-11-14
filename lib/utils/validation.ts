@@ -6,7 +6,7 @@ export const isValidEmail = (email: string): boolean => {
   return emailRegex.test(email.trim());
 };
 
-/** 
+/**
  *  至少 8 位
  *  至少 1 个大写字母
  *  至少 1 个小写字母

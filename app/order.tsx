@@ -1,19 +1,13 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  ActivityIndicator,
-  SectionList,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
-import { useRouter } from "expo-router";
-import { globalStyles } from "../styles/globalStyles";
-import { colors } from "../styles/colors";
+import React, {useCallback, useEffect, useMemo, useState} from "react";
+import {ActivityIndicator, SectionList, StyleSheet, Text, View,} from "react-native";
+import {useRouter} from "expo-router";
+import {globalStyles} from "../styles/globalStyles";
+import {colors} from "../styles/colors";
 import OrderCard from "../components/OrderCard";
-import { OrderStatus } from "../types";
-import { deriveOrderStatusFromItems, useOrderApi } from "../lib/api/order";
-import { useProductApi } from "../lib/api/product";
-import { IMAGE_URL_PREFIX } from "../constant";
+import {OrderStatus} from "../types";
+import {deriveOrderStatusFromItems, useOrderApi} from "../lib/api/order";
+import {useProductApi} from "../lib/api/product";
+import {IMAGE_URL_PREFIX} from "../constant";
 
 type Order = {
   id: string;
@@ -26,8 +20,8 @@ type Section = { title: string; data: Order[] };
 
 export default function Orders() {
   const router = useRouter();
-  const { listOrders, getOrder } = useOrderApi();
-  const { getProduct } = useProductApi();
+  const {listOrders, getOrder} = useOrderApi();
+  const {getProduct} = useProductApi();
 
   const [sections, setSections] = useState<Section[]>([]);
   const [loading, setLoading] = useState(true);
@@ -61,14 +55,14 @@ export default function Orders() {
               productIds.map(async (pid) => {
                 try {
                   const p = await getProduct(pid);
-                  return { pid, product: p };
+                  return {pid, product: p};
                 } catch {
-                  return { pid, product: null as any };
+                  return {pid, product: null as any};
                 }
               })
             );
             const productMap = new Map<string, any>();
-            productResults.forEach(({ pid, product }) => {
+            productResults.forEach(({pid, product}) => {
               if (product) productMap.set(pid, product);
             });
 
@@ -78,7 +72,7 @@ export default function Orders() {
               if (picture && !/^https?:\/\//i.test(picture)) {
                 picture = IMAGE_URL_PREFIX + picture.replace(/^\/+/, "");
               }
-              return { imageUrl: picture };
+              return {imageUrl: picture};
             });
           }
 
@@ -94,8 +88,8 @@ export default function Orders() {
         const past = orders.filter((o) => o.status !== "placed");
 
         const nextSections: Section[] = [];
-        if (active.length > 0) nextSections.push({ title: "Active orders", data: active });
-        if (past.length > 0) nextSections.push({ title: "Past orders", data: past });
+        if (active.length > 0) nextSections.push({title: "Active orders", data: active});
+        if (past.length > 0) nextSections.push({title: "Past orders", data: past});
 
         setSections(nextSections);
       } catch (e: any) {
@@ -130,21 +124,21 @@ export default function Orders() {
       <SectionList<Order, Section>
         sections={sections}
         keyExtractor={(item) => item.id}
-        renderSectionHeader={({ section }) => (
+        renderSectionHeader={({section}) => (
           <Text style={styles.sectionTitle}>{section.title}</Text>
         )}
-        renderItem={({ item }) => (
+        renderItem={({item}) => (
           <OrderCard
             id={item.id}
             items={item.items}
             createdAt={item.createdAt}
             status={item.status}
             onPress={() =>
-              router.push({ pathname: "/order/[id]", params: { id: item.id } })
+              router.push({pathname: "/order/[id]", params: {id: item.id}})
             }
           />
         )}
-        contentContainerStyle={{ paddingVertical: 8, paddingBottom: 8, flexGrow: 1 }}
+        contentContainerStyle={{paddingVertical: 8, paddingBottom: 8, flexGrow: 1}}
         stickySectionHeadersEnabled={false}
         refreshing={refreshing}
         onRefresh={onRefresh}
@@ -152,7 +146,7 @@ export default function Orders() {
           <View style={styles.center}>
             {loading ? (
               <>
-                <ActivityIndicator />
+                <ActivityIndicator/>
                 <Text style={styles.centerText}>Loading orders…</Text>
               </>
             ) : error ? (

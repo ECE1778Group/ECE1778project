@@ -1,7 +1,7 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
-import { globalStyles } from "../styles/globalStyles";
-import { colors } from "../styles/colors";
+import {StyleSheet, Text, View} from "react-native";
+import {globalStyles} from "../styles/globalStyles";
+import {colors} from "../styles/colors";
 
 export default function SettingsScreen() {
   return (

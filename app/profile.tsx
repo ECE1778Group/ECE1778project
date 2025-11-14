@@ -1,17 +1,17 @@
-import React, { useMemo, useState } from "react";
-import { View, Text, TextInput, Pressable, StyleSheet, ScrollView } from "react-native";
-import { useRouter } from "expo-router";
+import React, {useMemo, useState} from "react";
+import {Pressable, ScrollView, StyleSheet, Text, TextInput, View} from "react-native";
+import {useRouter} from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useAuth } from "../contexts/AuthContext";
-import { useUserApi } from "../lib/api/user";
-import { useMessage } from "../contexts/MessageContext";
-import { colors } from "../styles/colors";
-import { globalStyles } from "../styles/globalStyles";
+import {useAuth} from "../contexts/AuthContext";
+import {useUserApi} from "../lib/api/user";
+import {useMessage} from "../contexts/MessageContext";
+import {colors} from "../styles/colors";
+import {globalStyles} from "../styles/globalStyles";
 
 export default function ProfileScreen() {
-  const { user, loggedIn, logout, updateUser } = useAuth();
-  const { updateProfile } = useUserApi();
-  const { showMessage } = useMessage();
+  const {user, loggedIn, logout, updateUser} = useAuth();
+  const {updateProfile} = useUserApi();
+  const {showMessage} = useMessage();
   const router = useRouter();
 
   const [email, setEmail] = useState(user.email || "");
@@ -70,7 +70,7 @@ export default function ProfileScreen() {
 
   return (
     <ScrollView
-      contentContainerStyle={[globalStyles.container, { paddingHorizontal: 24, paddingTop: 60 }]}
+      contentContainerStyle={[globalStyles.container, {paddingHorizontal: 24, paddingTop: 60}]}
       keyboardShouldPersistTaps="handled"
     >
       <Text style={styles.title}>My Profile</Text>
@@ -124,7 +124,7 @@ export default function ProfileScreen() {
 
       {/* Logout button */}
       <Pressable
-        style={[styles.dangerBtn, { marginTop: 16 }]}
+        style={[styles.dangerBtn, {marginTop: 16}]}
         onPress={async () => {
           await logout();
           router.replace("/auth/login");
