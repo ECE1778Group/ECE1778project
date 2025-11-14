@@ -204,11 +204,6 @@ const styles = StyleSheet.create({
   priceText: {
     ...globalStyles.priceText,
   },
-  ctaText: {
-    color: colors.primary,
-    fontSize: 14,
-    fontWeight: "600",
-  },
   statusPill: {
     ...globalStyles.statusPill,
   },

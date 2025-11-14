@@ -306,11 +306,6 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.border,
     borderBottomWidth: 1,
   },
-  title: {
-    color: colors.textPrimary,
-    fontSize: 18,
-    fontWeight: "700",
-  },
   sub: {
     color: colors.placeholder,
     fontSize: 12,
