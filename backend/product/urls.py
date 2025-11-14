@@ -22,7 +22,7 @@ from .views.productView import ProductView
 
 urlpatterns = [
     path('', ProductView.as_view()),
-    path('<str:id>', ProductDetailsView.as_view()),
+    path('details/<str:id>', ProductDetailsView.as_view()),
 
     path('search/', ProductListView.as_view()),
 ]

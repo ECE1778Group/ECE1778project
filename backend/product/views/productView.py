@@ -31,8 +31,9 @@ class ProductView(APIView):
                     'price': {'type': 'number'},
                     'quantity': {'type': 'number'},
                     'picture': {'type': 'string', 'format': 'binary'},
+                    'seller_name': {'type': 'string'},
                 },
-                'required': ['title', 'description', 'category', 'seller_username', 'price', 'picture'],
+                'required': ['title', 'description', 'category', 'price', 'picture', 'seller_name'],
             }
         },
         responses={
@@ -43,6 +44,7 @@ class ProductView(APIView):
     )
     def post(self, request: Request):
         data = request.data
+        logger.info(data)
         seller_username = request.user.username
         picture = request.FILES.get("picture")
         logger.info(data)

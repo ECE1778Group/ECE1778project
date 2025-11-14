@@ -16,18 +16,15 @@ class ProductListView(APIView):
     @extend_schema(
         summary='search product by keyword',
         parameters=[OpenApiParameter(name='keyword', type=str, location=OpenApiParameter.QUERY, required=True)],
-        responses={200: ProductSerializer(many=True), 404: OpenApiResponse(description="product not found")},
+        responses={200: ProductSerializer(many=True)},
     )
     def get(self,request: HttpRequest):
         data = request.GET
         logger.info(data)
         if data.get("keyword"):
-            products: list[dict] | None = productService.list_products_by_keyword(data.get("keyword"))
-            if products:
-                serializer = ProductSerializer(products, many=True)
-                return Response(serializer.data)
-            else:
-                raise NotFound()
+            products: list[dict] = productService.list_products_by_keyword(data.get("keyword"))
+            serializer = ProductSerializer(products, many=True)
+            return Response(serializer.data)
         else:
             raise ValidationError(detail="keyword not provided")
 
