@@ -4,6 +4,7 @@ import { useRouter } from "expo-router";
 import { colors } from "../styles/colors";
 import { IMAGE_URL_PREFIX } from "../constant";
 import { OrderStatus } from "../types";
+import {sharedStyles} from "../styles/shared";
 
 export type ItemCardProps = {
   id: string;
@@ -133,42 +134,30 @@ export default function ItemCard(props: ItemCardProps) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.white,
-    borderColor: colors.border,
-    borderWidth: 1,
-    borderRadius: 12,
+    ...sharedStyles.cardBase,
     padding: 10,
-    marginHorizontal: 12,
-    marginVertical: 6,
   },
   cardPressed: {
-    transform: [{ scale: 0.99 }],
+    ...sharedStyles.cardPressed,
   },
   row: {
     flexDirection: "row",
     alignItems: "stretch",
   },
   media: {
+    ...sharedStyles.mediaBase,
     width: 96,
     height: 96,
-    borderRadius: 8,
-    overflow: "hidden",
-    backgroundColor: colors.background,
-    marginRight: 12,
   },
   image: {
     width: "100%",
     height: "100%",
   },
   imagePlaceholder: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: colors.background,
+    ...sharedStyles.imagePlaceholder,
   },
   imagePlaceholderText: {
-    color: colors.placeholder,
-    fontSize: 12,
+    ...sharedStyles.imagePlaceholderText,
   },
   info: {
     flex: 1,
@@ -187,14 +176,10 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   tag: {
-    backgroundColor: colors.background,
-    borderRadius: 6,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    ...sharedStyles.tag,
   },
   tagText: {
-    color: colors.textPrimary,
-    fontSize: 12,
+    ...sharedStyles.tagText,
   },
   tagMuted: {
     backgroundColor: colors.white,
@@ -214,15 +199,10 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   priceBadge: {
-    backgroundColor: colors.primary,
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+    ...sharedStyles.priceBadge,
   },
   priceText: {
-    color: colors.white,
-    fontSize: 14,
-    fontWeight: "700",
+    ...sharedStyles.priceText,
   },
   ctaText: {
     color: colors.primary,
@@ -230,10 +210,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   statusPill: {
-    borderRadius: 8,
-    borderWidth: 1,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    ...sharedStyles.statusPill,
   },
   statusPillText: {
     fontSize: 12,

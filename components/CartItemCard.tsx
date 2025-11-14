@@ -2,6 +2,7 @@ import React, {useMemo} from "react";
 import {Image, Pressable, StyleSheet, Text, View} from "react-native";
 import {colors} from "../styles/colors";
 import {Minus, Plus, Trash2} from "lucide-react-native";
+import {sharedStyles} from "../styles/shared";
 
 export type CartItemProps = {
   id: string;
@@ -98,39 +99,27 @@ export default function CartItem(props: CartItemProps) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.white,
-    borderColor: colors.border,
-    borderWidth: 1,
-    borderRadius: 12,
+    ...sharedStyles.cardBase,
     padding: 10,
-    marginHorizontal: 12,
-    marginVertical: 6,
   },
   row: {
     flexDirection: "row",
     alignItems: "stretch",
   },
   media: {
+    ...sharedStyles.mediaBase,
     width: 80,
     height: 80,
-    borderRadius: 8,
-    overflow: "hidden",
-    backgroundColor: colors.background,
-    marginRight: 12,
   },
   image: {
     width: "100%",
     height: "100%",
   },
   imagePlaceholder: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: colors.background,
+    ...sharedStyles.imagePlaceholder,
   },
   imagePlaceholderText: {
-    color: colors.placeholder,
-    fontSize: 12,
+    ...sharedStyles.imagePlaceholderText,
   },
   info: {
     flex: 1,
@@ -143,25 +132,16 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   priceBadge: {
-    backgroundColor: colors.primary,
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+    ...sharedStyles.priceBadge,
   },
   priceText: {
-    color: colors.white,
-    fontSize: 14,
-    fontWeight: "700",
+    ...sharedStyles.priceText,
   },
   tag: {
-    backgroundColor: colors.background,
-    borderRadius: 6,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    ...sharedStyles.tag,
   },
   tagText: {
-    color: colors.textPrimary,
-    fontSize: 12,
+    ...sharedStyles.tagText,
   },
   removeBtn: {
     marginLeft: "auto",

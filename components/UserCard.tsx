@@ -3,6 +3,7 @@ import {Image, Pressable, StyleSheet, Text, View} from "react-native";
 import {useRouter} from "expo-router";
 import {colors} from "../styles/colors";
 import {MessageCircle} from "lucide-react-native";
+import {sharedStyles} from "../styles/shared";
 
 export type UserCardProps = {
   threadId: string;
@@ -54,16 +55,11 @@ export default function UserCard(props: UserCardProps) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.white,
-    borderColor: colors.border,
-    borderWidth: 1,
-    borderRadius: 12,
+    ...sharedStyles.cardBase,
     padding: 12,
-    marginHorizontal: 12,
-    marginVertical: 6,
   },
   cardPressed: {
-    transform: [{scale: 0.99}],
+    ...sharedStyles.cardPressed,
   },
   row: {
     flexDirection: "row",
@@ -105,14 +101,10 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   roleBadge: {
-    backgroundColor: colors.background,
-    borderRadius: 6,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    ...sharedStyles.tag,
   },
   roleText: {
-    color: colors.textPrimary,
-    fontSize: 12,
+    ...sharedStyles.tagText,
   },
   right: {
     marginLeft: 8,
