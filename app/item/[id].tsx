@@ -22,6 +22,7 @@ import {Share2} from "lucide-react-native";
 import {useProductApi} from "../../lib/api/product";
 import {IMAGE_URL_PREFIX} from "../../constant";
 
+
 type LocalItem = MarketplaceItem & { description?: string };
 
 function formatPrice(n: number) {
@@ -282,13 +283,10 @@ const styles = StyleSheet.create({
     height: "100%",
   },
   imagePlaceholder: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
+    ...globalStyles.imagePlaceholder,
   },
   imagePlaceholderText: {
-    color: colors.placeholder,
-    fontSize: 12,
+    ...globalStyles.imagePlaceholderText,
   },
   title: {
     color: colors.textPrimary,
@@ -309,14 +307,10 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   tag: {
-    backgroundColor: colors.background,
-    borderRadius: 6,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    ...globalStyles.tag,
   },
   tagText: {
-    color: colors.textPrimary,
-    fontSize: 12,
+    ...globalStyles.tagText,
   },
   sectionTitle: {
     color: colors.textPrimary,
@@ -330,16 +324,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   actionBar: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
-    borderTopColor: colors.border,
-    borderTopWidth: 1,
-    backgroundColor: colors.white,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    flexDirection: "row",
+    ...globalStyles.footerBar,
     gap: 12,
   },
   cartBtn: {

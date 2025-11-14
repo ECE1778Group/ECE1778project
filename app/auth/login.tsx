@@ -5,6 +5,7 @@ import { useRouter } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { colors } from "../../styles/colors";
 import { useMessage } from "../../contexts/MessageContext";
+import {globalStyles} from "../../styles/globalStyles";
 
 export default function Login() {
   const router = useRouter();
@@ -94,16 +95,11 @@ export default function Login() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    justifyContent: "center",
-    padding: 24,
-    backgroundColor: "#f9f9f9",
+    ...globalStyles.authContainer,
   },
   title: {
-    textAlign: "center",
+    ...globalStyles.formTitleBase,
     marginBottom: 24,
-    fontWeight: "700",
-    color: colors.textPrimary,
   },
   input: {
     marginBottom: 12,
@@ -117,4 +113,3 @@ const styles = StyleSheet.create({
     marginVertical: 16,
   },
 });
-

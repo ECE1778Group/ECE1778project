@@ -92,16 +92,7 @@ export default function Cart() {
 
 const styles = StyleSheet.create({
   footer: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
-    borderTopColor: colors.border,
-    borderTopWidth: 1,
-    backgroundColor: colors.white,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    flexDirection: "row",
+    ...globalStyles.footerBar,
     alignItems: "center",
     gap: 10,
   },
@@ -140,8 +131,7 @@ const styles = StyleSheet.create({
   },
   empty: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
+    ...globalStyles.center,
   },
   emptyText: {
     color: colors.placeholder,

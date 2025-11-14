@@ -12,6 +12,11 @@ export default function SettingsScreen() {
 }
 
 const styles = StyleSheet.create({
-  center: { alignItems: "center", justifyContent: "center" },
-  text: { color: colors.textPrimary, fontSize: 16 },
+  center: {
+    ...globalStyles.center,
+  },
+  text: {
+    color: colors.textPrimary,
+    fontSize: 16,
+  },
 });

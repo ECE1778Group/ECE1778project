@@ -185,8 +185,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   center: {
-    alignItems: "center",
-    justifyContent: "center",
+    ...globalStyles.center,
   },
   tip: {
     color: colors.textPrimary,

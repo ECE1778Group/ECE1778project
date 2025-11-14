@@ -15,6 +15,7 @@ import { useProductApi } from "../../lib/api/product";
 import { OrderStatus } from "../../types";
 import { IMAGE_URL_PREFIX } from "../../constant";
 
+
 type OrderItemView = {
   id: string;
   title: string;
@@ -191,17 +192,15 @@ export default function OrderDetail() {
 
 const styles = StyleSheet.create({
   center: {
-    alignItems: "center",
-    justifyContent: "center",
+    ...globalStyles.center,
   },
   centerText: {
     color: colors.placeholder,
     fontSize: 14,
   },
   tip: {
+    ...globalStyles.tipSmall,
     marginTop: 4,
-    color: colors.placeholder,
-    fontSize: 12,
   },
   header: {
     paddingHorizontal: 16,

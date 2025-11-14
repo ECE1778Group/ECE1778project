@@ -301,24 +301,84 @@ export default function ChatThread() {
 }
 
 const styles = StyleSheet.create({
-  header: {padding: 16, borderBottomColor: colors.border, borderBottomWidth: 1},
-  title: {color: colors.textPrimary, fontSize: 18, fontWeight: "700"},
-  sub: {color: colors.placeholder, fontSize: 12, marginTop: 4},
-  status: {color: colors.textPrimary, fontSize: 12, marginTop: 4},
-  row: {width: "100%", marginVertical: 6, flexDirection: "row"},
-  rowStart: {justifyContent: "flex-start"},
-  rowEnd: {justifyContent: "flex-end"},
-  bubble: {maxWidth: "78%", paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12},
-  bubblePeer: {backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border},
-  bubbleMe: {backgroundColor: colors.primary},
-  msgText: {fontSize: 15, lineHeight: 20},
-  msgTextPeer: {color: colors.textPrimary},
-  msgTextMe: {color: colors.white},
-  msgImage: {width: 160, height: 120, borderRadius: 8},
-  locCard: {borderRadius: 10, overflow: "hidden", padding: 6, marginTop: 4},
-  locCardPeer: {backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border},
-  locCardMe: {backgroundColor: "rgba(255,255,255,0.15)"},
-  locText: {fontSize: 14, marginTop: 6},
+  header: {
+    padding: 16,
+    borderBottomColor: colors.border,
+    borderBottomWidth: 1,
+  },
+  title: {
+    color: colors.textPrimary,
+    fontSize: 18,
+    fontWeight: "700",
+  },
+  sub: {
+    color: colors.placeholder,
+    fontSize: 12,
+    marginTop: 4,
+  },
+  status: {
+    color: colors.textPrimary,
+    fontSize: 12,
+    marginTop: 4,
+  },
+  row: {
+    width: "100%",
+    marginVertical: 6,
+    flexDirection: "row",
+  },
+  rowStart: {
+    justifyContent: "flex-start",
+  },
+  rowEnd: {
+    justifyContent: "flex-end",
+  },
+  bubble: {
+    maxWidth: "78%",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 12,
+  },
+  bubblePeer: {
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  bubbleMe: {
+    backgroundColor: colors.primary,
+  },
+  msgText: {
+    fontSize: 15,
+    lineHeight: 20,
+  },
+  msgTextPeer: {
+    color: colors.textPrimary,
+  },
+  msgTextMe: {
+    color: colors.white,
+  },
+  msgImage: {
+    width: 160,
+    height: 120,
+    borderRadius: 8,
+  },
+  locCard: {
+    borderRadius: 10,
+    overflow: "hidden",
+    padding: 6,
+    marginTop: 4,
+  },
+  locCardPeer: {
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  locCardMe: {
+    backgroundColor: "rgba(255,255,255,0.15)",
+  },
+  locText: {
+    fontSize: 14,
+    marginTop: 6,
+  },
   inputBar: {
     flexDirection: "row",
     alignItems: "center",

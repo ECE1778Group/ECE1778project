@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import { View, Text, Image, Pressable, StyleSheet } from "react-native";
 import { colors } from "../styles/colors";
-import {sharedStyles} from "../styles/shared";
+import {globalStyles} from "../styles/globalStyles";
 
 export type OrderCardProps = {
   id: string;
@@ -74,11 +74,11 @@ export default function OrderCard(props: OrderCardProps) {
 
 const styles = StyleSheet.create({
   card: {
-    ...sharedStyles.cardBase,
+    ...globalStyles.cardBase,
     padding: 12,
   },
   cardPressed: {
-    ...sharedStyles.cardPressed,
+    ...globalStyles.cardPressed,
   },
   row: {
     flexDirection: "row",
@@ -102,7 +102,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   placeholderText: {
-    ...sharedStyles.imagePlaceholderText,
+    ...globalStyles.imagePlaceholderText,
   },
   info: {
     flex: 1,
@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   statusBadge: {
-    ...sharedStyles.statusPill,
+    ...globalStyles.statusPill,
     alignSelf: "flex-start",
     paddingVertical: 6,
   },

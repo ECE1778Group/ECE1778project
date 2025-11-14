@@ -2,7 +2,7 @@ import React, {useMemo} from "react";
 import {Image, Pressable, StyleSheet, Text, View} from "react-native";
 import {colors} from "../styles/colors";
 import {Minus, Plus, Trash2} from "lucide-react-native";
-import {sharedStyles} from "../styles/shared";
+import {globalStyles} from "../styles/globalStyles";
 
 export type CartItemProps = {
   id: string;
@@ -99,7 +99,7 @@ export default function CartItem(props: CartItemProps) {
 
 const styles = StyleSheet.create({
   card: {
-    ...sharedStyles.cardBase,
+    ...globalStyles.cardBase,
     padding: 10,
   },
   row: {
@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
     alignItems: "stretch",
   },
   media: {
-    ...sharedStyles.mediaBase,
+    ...globalStyles.mediaBase,
     width: 80,
     height: 80,
   },
@@ -116,10 +116,10 @@ const styles = StyleSheet.create({
     height: "100%",
   },
   imagePlaceholder: {
-    ...sharedStyles.imagePlaceholder,
+    ...globalStyles.imagePlaceholder,
   },
   imagePlaceholderText: {
-    ...sharedStyles.imagePlaceholderText,
+    ...globalStyles.imagePlaceholderText,
   },
   info: {
     flex: 1,
@@ -132,16 +132,16 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   priceBadge: {
-    ...sharedStyles.priceBadge,
+    ...globalStyles.priceBadge,
   },
   priceText: {
-    ...sharedStyles.priceText,
+    ...globalStyles.priceText,
   },
   tag: {
-    ...sharedStyles.tag,
+    ...globalStyles.tag,
   },
   tagText: {
-    ...sharedStyles.tagText,
+    ...globalStyles.tagText,
   },
   removeBtn: {
     marginLeft: "auto",

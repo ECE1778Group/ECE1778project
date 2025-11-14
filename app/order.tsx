@@ -189,17 +189,15 @@ const styles = StyleSheet.create({
   },
   center: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
+    ...globalStyles.center,
   },
   centerText: {
     color: colors.placeholder,
     fontSize: 16,
   },
   tip: {
+    ...globalStyles.tipSmall,
     marginTop: 4,
-    color: colors.placeholder,
-    fontSize: 12,
   },
   errorBar: {
     position: "absolute",

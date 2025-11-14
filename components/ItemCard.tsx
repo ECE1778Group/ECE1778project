@@ -4,7 +4,7 @@ import { useRouter } from "expo-router";
 import { colors } from "../styles/colors";
 import { IMAGE_URL_PREFIX } from "../constant";
 import { OrderStatus } from "../types";
-import {sharedStyles} from "../styles/shared";
+import {globalStyles} from "../styles/globalStyles";
 
 export type ItemCardProps = {
   id: string;
@@ -134,18 +134,18 @@ export default function ItemCard(props: ItemCardProps) {
 
 const styles = StyleSheet.create({
   card: {
-    ...sharedStyles.cardBase,
+    ...globalStyles.cardBase,
     padding: 10,
   },
   cardPressed: {
-    ...sharedStyles.cardPressed,
+    ...globalStyles.cardPressed,
   },
   row: {
     flexDirection: "row",
     alignItems: "stretch",
   },
   media: {
-    ...sharedStyles.mediaBase,
+    ...globalStyles.mediaBase,
     width: 96,
     height: 96,
   },
@@ -154,10 +154,10 @@ const styles = StyleSheet.create({
     height: "100%",
   },
   imagePlaceholder: {
-    ...sharedStyles.imagePlaceholder,
+    ...globalStyles.imagePlaceholder,
   },
   imagePlaceholderText: {
-    ...sharedStyles.imagePlaceholderText,
+    ...globalStyles.imagePlaceholderText,
   },
   info: {
     flex: 1,
@@ -176,10 +176,10 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   tag: {
-    ...sharedStyles.tag,
+    ...globalStyles.tag,
   },
   tagText: {
-    ...sharedStyles.tagText,
+    ...globalStyles.tagText,
   },
   tagMuted: {
     backgroundColor: colors.white,
@@ -199,10 +199,10 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   priceBadge: {
-    ...sharedStyles.priceBadge,
+    ...globalStyles.priceBadge,
   },
   priceText: {
-    ...sharedStyles.priceText,
+    ...globalStyles.priceText,
   },
   ctaText: {
     color: colors.primary,
@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   statusPill: {
-    ...sharedStyles.statusPill,
+    ...globalStyles.statusPill,
   },
   statusPillText: {
     fontSize: 12,

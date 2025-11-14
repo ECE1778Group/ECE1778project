@@ -7,6 +7,7 @@ import { useUserApi } from "../../lib/api/user";
 import { useMessage } from "../../contexts/MessageContext";
 import { isValidEmail, isValidPassword, isValidCode } from "../../lib/utils/validation";
 
+
 export default function Signup() {
     const router = useRouter();
     const { sendVerificationCode, verifyCode, signup } = useUserApi();
@@ -206,14 +207,39 @@ export default function Signup() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: "center", padding: 24, backgroundColor: "#f9f9f9" },
-  title: { textAlign: "center", marginBottom: 16, fontWeight: "700", color: colors.textPrimary },
-  input: { marginBottom: 8, backgroundColor: "white" },
-  button: { marginVertical: 10, borderRadius: 8 },
-  divider: { marginVertical: 16 },
-  codeRow: { flexDirection: "row", alignItems: "center", marginBottom: 8 },
-  sendButton: { marginLeft: 8, borderRadius: 8 },
-  errorText: { color: "red", fontSize: 12, marginBottom: 6, marginLeft: 4 },
+  container: {
+    ...globalStyles.authContainer,
+  },
+  title: {
+    ...globalStyles.formTitleBase,
+    marginBottom: 16,
+  },
+  input: {
+    marginBottom: 8,
+    backgroundColor: "white",
+  },
+  button: {
+    marginVertical: 10,
+    borderRadius: 8,
+  },
+  divider: {
+    marginVertical: 16,
+  },
+  codeRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  sendButton: {
+    marginLeft: 8,
+    borderRadius: 8,
+  },
+  errorText: {
+    color: "red",
+    fontSize: 12,
+    marginBottom: 6,
+    marginLeft: 4,
+  },
   signInRow: {
     flexDirection: "row",
     justifyContent: "center",
