@@ -152,8 +152,8 @@ export default function Signup() {
         label="Password"
         value={password}
         onChangeText={setPassword}
-        textContentType="none"
-        autoComplete="off"
+        textContentType="newPassword"
+        autoComplete="password-new"
         importantForAutofill="no"
         secureTextEntry
         style={styles.input}
@@ -170,8 +170,8 @@ export default function Signup() {
         label="Confirm Password"
         value={confirmPassword}
         onChangeText={setConfirmPassword}
-        textContentType="none"
-        autoComplete="off"
+        textContentType="newPassword"
+        autoComplete="password-new"
         importantForAutofill="no"
         secureTextEntry
         style={styles.input}
