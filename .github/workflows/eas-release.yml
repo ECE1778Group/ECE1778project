@@ -1,0 +1,96 @@
+name: EAS Build and Release
+
+on:
+  push:
+    tags:
+      - "*"
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install EAS CLI
+        run: npm install -g eas-cli
+
+      - name: Build Android (EAS preview profile)
+        run: |
+          eas build --platform android --profile preview --non-interactive --wait
+
+      - name: Download Android artifact
+        run: |
+          mkdir -p dist
+          eas build:list \
+            --platform android \
+            --profile preview \
+            --status finished \
+            --limit 1 \
+            --json \
+            --non-interactive > android-build.json
+
+          ANDROID_URL=$(cat android-build.json | jq -r '.[0].artifacts.buildUrl')
+          if [ -z "$ANDROID_URL" ] || [ "$ANDROID_URL" = "null" ]; then
+            echo "Android artifact URL not found"
+            cat android-build.json
+            exit 1
+          fi
+
+          curl -L \
+            -H "Authorization: Bearer $EXPO_TOKEN" \
+            "$ANDROID_URL" \
+            -o dist/ECE1778project-android.apk
+
+      - name: Build iOS (EAS preview profile)
+        run: |
+          eas build --platform ios --profile preview --non-interactive --wait
+
+      - name: Download iOS artifact
+        run: |
+          mkdir -p dist
+          eas build:list \
+            --platform ios \
+            --profile preview \
+            --status finished \
+            --limit 1 \
+            --json \
+            --non-interactive > ios-build.json
+
+          IOS_URL=$(cat ios-build.json | jq -r '.[0].artifacts.buildUrl')
+          if [ -z "$IOS_URL" ] || [ "$IOS_URL" = "null" ]; then
+            echo "iOS artifact URL not found"
+            cat ios-build.json
+            exit 1
+          fi
+
+          curl -L \
+            -H "Authorization: Bearer $EXPO_TOKEN" \
+            "$IOS_URL" \
+            -o dist/ECE1778project-ios.ipa
+
+      - name: Create GitHub Release and upload APK/IPA
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            dist/ECE1778project-android.apk
+            dist/ECE1778project-ios.ipa
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
