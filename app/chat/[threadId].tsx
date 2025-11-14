@@ -10,7 +10,8 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  View
+  View,
+  Alert
 } from "react-native";
 import {useLocalSearchParams} from "expo-router";
 import {globalStyles} from "../../styles/globalStyles";
@@ -18,12 +19,18 @@ import {colors} from "../../styles/colors";
 import * as ImagePicker from "expo-image-picker";
 import * as Location from "expo-location";
 import MapView, {Marker, Region} from "react-native-maps";
-import {Camera, Image as ImageIcon, MapPin, Plus, Send} from "lucide-react-native";
+import {Camera, Image as ImageIcon, MapPin, Plus, Send, CheckCircle2} from "lucide-react-native";
 
 type Msg =
   | { id: string; from: "me" | "peer"; text: string; ts: number }
   | { id: string; from: "me" | "peer"; imageUri: string; ts: number }
   | { id: string; from: "me" | "peer"; location: { lat: number; lng: number; address?: string }; ts: number };
+
+type ThreadStatus = "placed" | "completed" | "cancelled";
+
+const syncStatusToServer = async (status: ThreadStatus) => {
+  return;
+};
 
 export default function ChatThread() {
   const {threadId} = useLocalSearchParams<{ threadId: string }>();
@@ -34,6 +41,8 @@ export default function ChatThread() {
   const [pickerVisible, setPickerVisible] = useState(false);
   const [pickerRegion, setPickerRegion] = useState<Region | undefined>(undefined);
   const [pickerCoord, setPickerCoord] = useState<{ lat: number; lng: number } | undefined>(undefined);
+
+  const [status, setStatus] = useState<ThreadStatus>("placed");
 
   const listRef = useRef<FlatList<Msg>>(null);
 
@@ -51,6 +60,12 @@ export default function ChatThread() {
   }, []);
 
   const data = useMemo(() => msgs.slice().sort((a, b) => a.ts - b.ts), [msgs]);
+
+  const statusLabel = useMemo(() => {
+    if (status === "completed") return "Status: Completed";
+    if (status === "cancelled") return "Status: Cancelled";
+    return "Status: In progress";
+  }, [status]);
 
   const sendText = () => {
     const t = text.trim();
@@ -125,6 +140,37 @@ export default function ChatThread() {
     Linking.openURL(url);
   };
 
+  const handleStatusPress = () => {
+    if (status !== "placed") return;
+    Alert.alert(
+      "Update status",
+      "Mark this item as completed or cancelled?\n This action cannot be undone.",
+      [
+        {
+          text: "Completed",
+          onPress: async () => {
+            const next: ThreadStatus = "completed";
+            setStatus(next);
+            await syncStatusToServer(next);
+          }
+        },
+        {
+          text: "Cancelled",
+          style: "destructive",
+          onPress: async () => {
+            const next: ThreadStatus = "cancelled";
+            setStatus(next);
+            await syncStatusToServer(next);
+          }
+        },
+        {
+          text: "Close",
+          style: "cancel"
+        }
+      ]
+    );
+  };
+
   const renderItem = ({item}: { item: Msg }) => {
     const isMe = item.from === "me";
     return (
@@ -166,6 +212,7 @@ export default function ChatThread() {
     <View style={globalStyles.container}>
       <View style={styles.header}>
         <Text style={styles.sub}>Thread: {String(threadId)}</Text>
+        <Text style={styles.status}>{statusLabel}</Text>
       </View>
       <FlatList
         ref={listRef}
@@ -179,6 +226,13 @@ export default function ChatThread() {
       {expanded ? (
         <View style={styles.plusMenuWrap} pointerEvents="box-none">
           <View style={styles.plusMenuCard}>
+            <Pressable
+              onPress={handleStatusPress}
+              style={[styles.menuIconBtn, styles.statusMenuBtn]}
+              disabled={status !== "placed"}
+            >
+              <CheckCircle2 size={20} color={colors.white}/>
+            </Pressable>
             <Pressable onPress={openLocationPicker} style={styles.menuIconBtn}>
               <MapPin size={20} color={colors.textPrimary}/>
             </Pressable>
@@ -250,6 +304,7 @@ const styles = StyleSheet.create({
   header: {padding: 16, borderBottomColor: colors.border, borderBottomWidth: 1},
   title: {color: colors.textPrimary, fontSize: 18, fontWeight: "700"},
   sub: {color: colors.placeholder, fontSize: 12, marginTop: 4},
+  status: {color: colors.textPrimary, fontSize: 12, marginTop: 4},
   row: {width: "100%", marginVertical: 6, flexDirection: "row"},
   rowStart: {justifyContent: "flex-start"},
   rowEnd: {justifyContent: "flex-end"},
@@ -342,6 +397,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     borderColor: colors.border,
     borderWidth: 1,
+  },
+  statusMenuBtn: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
   modalWrap: {
     flex: 1,
