@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  RefreshControl,
   SectionList,
   StyleSheet,
   Text,
@@ -32,44 +31,54 @@ export default function Orders() {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const loadOrders = useCallback(async () => {
-    setError(null);
-    if (!refreshing) setLoading(true);
-    try {
-      const summaries = await listOrders();
-      const orders: Order[] = [];
-
-      for (const summary of summaries) {
-        const detail = await getOrder(summary.order_number);
-        const items = detail?.items ?? [];
-        const status = deriveOrderStatusFromItems(items);
-        orders.push({
-          id: summary.order_number,
-          createdAt: summary.created_at,
-          status,
-          items: items.map(() => ({})),
-        });
+  const loadOrders = useCallback(
+    async (isRefresh: boolean = false) => {
+      setError(null);
+      if (isRefresh) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
       }
+      try {
+        const summaries = await listOrders();
+        const orders: Order[] = [];
 
-      const active = orders.filter((o) => o.status === "placed");
-      const past = orders.filter((o) => o.status !== "placed");
+        for (const summary of summaries) {
+          const detail = await getOrder(summary.order_number);
+          const items = detail?.items ?? [];
+          const status = deriveOrderStatusFromItems(items);
+          orders.push({
+            id: summary.order_number,
+            createdAt: summary.created_at,
+            status,
+            items: items.map(() => ({})),
+          });
+        }
 
-      const nextSections: Section[] = [];
-      if (active.length > 0) nextSections.push({ title: "Active orders", data: active });
-      if (past.length > 0) nextSections.push({ title: "Past orders", data: past });
+        const active = orders.filter((o) => o.status === "placed");
+        const past = orders.filter((o) => o.status !== "placed");
 
-      setSections(nextSections);
-    } catch (e: any) {
-      setError(e?.message || "Failed to load orders");
-      setSections([]);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [listOrders, getOrder, refreshing]);
+        const nextSections: Section[] = [];
+        if (active.length > 0) nextSections.push({ title: "Active orders", data: active });
+        if (past.length > 0) nextSections.push({ title: "Past orders", data: past });
+
+        setSections(nextSections);
+      } catch (e: any) {
+        setError(e?.message || "Failed to load orders");
+        setSections([]);
+      } finally {
+        if (isRefresh) {
+          setRefreshing(false);
+        } else {
+          setLoading(false);
+        }
+      }
+    },
+    [listOrders, getOrder]
+  );
 
   useEffect(() => {
-    loadOrders();
+    loadOrders(false);
   }, [loadOrders]);
 
   const hasSections = useMemo(
@@ -78,27 +87,8 @@ export default function Orders() {
   );
 
   const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    loadOrders();
+    loadOrders(true);
   }, [loadOrders]);
-
-  if (loading && !refreshing && !hasSections) {
-    return (
-      <View style={[globalStyles.container, styles.center]}>
-        <ActivityIndicator />
-        <Text style={styles.centerText}>Loading orders…</Text>
-      </View>
-    );
-  }
-
-  if (error && !hasSections && !loading) {
-    return (
-      <View style={[globalStyles.container, styles.center]}>
-        <Text style={styles.centerText}>{error}</Text>
-        <Text style={styles.tip}>Pull down to retry.</Text>
-      </View>
-    );
-  }
 
   return (
     <View style={globalStyles.container}>
@@ -119,10 +109,29 @@ export default function Orders() {
             }
           />
         )}
-        contentContainerStyle={{ paddingVertical: 8, paddingBottom: 8 }}
+        contentContainerStyle={{ paddingVertical: 8, paddingBottom: 8, flexGrow: 1 }}
         stickySectionHeadersEnabled={false}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        refreshing={refreshing}
+        onRefresh={onRefresh}
+        ListEmptyComponent={
+          <View style={styles.center}>
+            {loading ? (
+              <>
+                <ActivityIndicator />
+                <Text style={styles.centerText}>Loading orders…</Text>
+              </>
+            ) : error ? (
+              <>
+                <Text style={styles.centerText}>{error}</Text>
+                <Text style={styles.tip}>Pull down to refresh</Text>
+              </>
+            ) : (
+              <>
+                <Text style={styles.centerText}>No orders yet</Text>
+                <Text style={styles.tip}>Pull down to refresh</Text>
+              </>
+            )}
+          </View>
         }
       />
       {error && hasSections ? (
@@ -150,7 +159,7 @@ const styles = StyleSheet.create({
   },
   centerText: {
     color: colors.placeholder,
-    fontSize: 14,
+    fontSize: 16,
   },
   tip: {
     marginTop: 4,
