@@ -3,50 +3,12 @@ import {useCallback} from "react";
 import {useFetch} from "./fetch-client";
 import {notifyOrderStatus} from "./notifications";
 import {OrderStatus} from "../../types";
-
-type CreateOrderItem = {
-  product_id: string;
-  quantity: number;
-};
-
-type CreateOrderRequest = {
-  items: CreateOrderItem[];
-  customer_username: string;
-};
-
-type CreateOrderResponse = {
-  order_number: string;
-  customer_username: string;
-  total_amount: number;
-  created_at: string;
-  updated_at: string;
-};
-
-export type OrderSummaryDto = {
-  order_number: string;
-  customer_username: string;
-  total_amount: number;
-  created_at: string;
-  updated_at: string;
-};
-
-export type OrderItemDto = {
-  order_number: string;
-  product_id: string;
-  quantity: number;
-  unit_price: number;
-  total_amount: number;
-  status: string;
-};
-
-export type OrderDetailDto = {
-  order_number: string;
-  items: OrderItemDto[];
-  customer_username: string;
-  total_amount: number;
-  created_at: string;
-  updated_at: string;
-};
+import {
+  CreateOrderRequest,
+  CreateOrderResponse,
+  OrderDetailDto,
+  OrderSummaryDto
+} from "../../interfaces/Order.interface";
 
 function normalizeStatus(raw: string): OrderStatus {
   const v = raw.toLowerCase();

@@ -77,5 +77,5 @@ def create_user(email, password, first_name="", last_name="", username=""):
 
 
 def authenticate_user(email, password):
-    user = authenticate(username=email, password=password)
+    user = authenticate(email=email, password=password)
     return user
