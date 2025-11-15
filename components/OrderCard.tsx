@@ -2,12 +2,13 @@ import React, {useMemo} from "react";
 import {Image, Pressable, StyleSheet, Text, View} from "react-native";
 import {colors} from "../styles/colors";
 import {globalStyles} from "../styles/globalStyles";
+import {OrderStatus} from "../types";
 
 export type OrderCardProps = {
   id: string;
   items: Array<{ imageUrl?: string }>;
   createdAt?: string | number | Date;
-  status: "placed" | "completed" | "cancelled";
+  status: OrderStatus;
   onPress?: () => void;
 };
 
@@ -15,15 +16,18 @@ function formatTime(d?: string | number | Date) {
   if (!d) return "";
   const t = new Date(d);
   if (isNaN(t.getTime())) return "";
-  return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, "0")}-${String(t.getDate()).padStart(2, "0")} ${String(
-    t.getHours()
-  ).padStart(2, "0")}:${String(t.getMinutes()).padStart(2, "0")}`;
+  return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, "0")}-${String(
+    t.getDate()
+  ).padStart(2, "0")} ${String(t.getHours()).padStart(2, "0")}:${String(t.getMinutes()).padStart(2, "0")}`;
 }
 
 export default function OrderCard(props: OrderCardProps) {
   const {id, items, createdAt, status, onPress} = props;
 
-  const stack = useMemo(() => items.slice(0, 3).map((x) => x.imageUrl).filter(Boolean) as string[], [items]);
+  const stack = useMemo(
+    () => items.slice(0, 3).map((x) => x.imageUrl).filter(Boolean) as string[],
+    [items]
+  );
   const statusText = useMemo(
     () => ({placed: "Placed", completed: "Completed", cancelled: "Cancelled"}[status]),
     [status]
@@ -41,13 +45,20 @@ export default function OrderCard(props: OrderCardProps) {
   };
 
   return (
-    <Pressable onPress={handlePress} style={({pressed}) => [styles.card, pressed && styles.cardPressed]}
-               accessibilityRole="button">
+    <Pressable
+      onPress={handlePress}
+      style={({pressed}) => [styles.card, pressed && styles.cardPressed]}
+      accessibilityRole="button"
+    >
       <View style={styles.row}>
         <View style={styles.mediaStack}>
           {stack.length === 0 ? (
             <View
-              style={[styles.stackItem, {left: 24, backgroundColor: colors.background, borderColor: colors.border}]}>
+              style={[
+                styles.stackItem,
+                {left: 24, backgroundColor: colors.background, borderColor: colors.border},
+              ]}
+            >
               <Text style={styles.placeholderText}>No Image</Text>
             </View>
           ) : (
@@ -65,7 +76,12 @@ export default function OrderCard(props: OrderCardProps) {
         <View style={styles.info}>
           <Text style={styles.title}>Order {id}</Text>
           <Text style={styles.time}>{timeText}</Text>
-          <View style={[styles.statusBadge, {backgroundColor: statusStyle.bg, borderColor: statusStyle.border}]}>
+          <View
+            style={[
+              styles.statusBadge,
+              {backgroundColor: statusStyle.bg, borderColor: statusStyle.border},
+            ]}
+          >
             <Text style={[styles.statusText, {color: statusStyle.fg}]}>{statusText}</Text>
           </View>
         </View>
