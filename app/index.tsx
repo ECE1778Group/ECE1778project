@@ -67,42 +67,11 @@ export default function Market() {
     [mapToItem]
   );
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await searchProducts("all");
-        if (!cancelled) applySearchResults(res);
-      } catch {
-        if (!cancelled) {
-          setData([]);
-          setPriceRange(null);
-          setSelectedMinPrice(null);
-          setSelectedMaxPrice(null);
-          setFilterVisible(false);
-        }
-      } finally {
-        if (!cancelled) setHasSearched(true);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [applySearchResults, searchProducts]);
-
   const handleSearch = useCallback(async () => {
     const q = text.trim();
-    if (!q) {
-      setData([]);
-      setPriceRange(null);
-      setSelectedMinPrice(null);
-      setSelectedMaxPrice(null);
-      setFilterVisible(false);
-      setHasSearched(true);
-      return;
-    }
+    const keyword = q || "all";
     try {
-      const res = await searchProducts(q);
+      const res = await searchProducts(keyword);
       applySearchResults(res);
     } catch {
       setData([]);
@@ -133,6 +102,27 @@ export default function Market() {
       setRefreshing(false);
     }
   }, [text, searchProducts, applySearchResults]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      let cancelled = false;
+
+      const run = async () => {
+        await handleRefresh();
+        setTimeout(() => {
+          if (!cancelled) {
+            handleRefresh();
+          }
+        }, 800);
+      };
+
+      run();
+
+      return () => {
+        cancelled = true;
+      };
+    }, [handleRefresh])
+  );
 
   const checkClipboardForShare = useCallback(async () => {
     try {
