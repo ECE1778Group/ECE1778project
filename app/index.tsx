@@ -26,6 +26,11 @@ export default function Market() {
   const {searchProducts} = useProductApi();
 
   const lastClipboardRef = useRef<string | null>(null);
+  const textRef = useRef(text);
+
+  useEffect(() => {
+    textRef.current = text;
+  }, [text]);
 
   const mapToItem = useCallback((p: any): MarketplaceItem => {
     const cat = String(p?.category ?? "").toLowerCase();
@@ -67,42 +72,33 @@ export default function Market() {
     [mapToItem]
   );
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await searchProducts("all");
-        if (!cancelled) applySearchResults(res);
-      } catch {
-        if (!cancelled) {
+  useFocusEffect(
+    useCallback(() => {
+      const run = async () => {
+        const q = textRef.current.trim();
+        const keyword = q || "all";
+        try {
+          const res = await searchProducts(keyword);
+          applySearchResults(res);
+        } catch {
           setData([]);
           setPriceRange(null);
           setSelectedMinPrice(null);
           setSelectedMaxPrice(null);
           setFilterVisible(false);
+        } finally {
+          setHasSearched(true);
         }
-      } finally {
-        if (!cancelled) setHasSearched(true);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [applySearchResults, searchProducts]);
+      };
+      run();
+    }, [searchProducts, applySearchResults])
+  );
 
   const handleSearch = useCallback(async () => {
     const q = text.trim();
-    if (!q) {
-      setData([]);
-      setPriceRange(null);
-      setSelectedMinPrice(null);
-      setSelectedMaxPrice(null);
-      setFilterVisible(false);
-      setHasSearched(true);
-      return;
-    }
+    const keyword = q || "all";
     try {
-      const res = await searchProducts(q);
+      const res = await searchProducts(keyword);
       applySearchResults(res);
     } catch {
       setData([]);
