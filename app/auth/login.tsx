@@ -63,8 +63,8 @@ export default function Login() {
         label="Password"
         value={password}
         onChangeText={setPassword}
-        autoComplete="password-new"
-        textContentType="newPassword"
+        autoComplete="password"
+        textContentType="password"
         autoCorrect={false}
         importantForAutofill="no"
         secureTextEntry
