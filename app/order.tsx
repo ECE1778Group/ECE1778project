@@ -1,6 +1,6 @@
 import React, {useCallback, useEffect, useMemo, useState} from "react";
 import {ActivityIndicator, SectionList, StyleSheet, Text, View,} from "react-native";
-import {useRouter} from "expo-router";
+import {useFocusEffect, useRouter} from "expo-router";
 import {globalStyles} from "../styles/globalStyles";
 import {colors} from "../styles/colors";
 import OrderCard from "../components/OrderCard";
@@ -109,6 +109,22 @@ export default function Orders() {
   useEffect(() => {
     loadOrders(false);
   }, [loadOrders]);
+
+  useFocusEffect(
+    useCallback(() => {
+      let cancelled = false;
+      const timer = setTimeout(() => {
+        if (!cancelled) {
+          loadOrders(true);
+        }
+      }, 800);
+
+      return () => {
+        cancelled = true;
+        clearTimeout(timer);
+      };
+    }, [loadOrders])
+  );
 
   const hasSections = useMemo(
     () => sections.some((s) => s.data.length > 0),

@@ -13,7 +13,7 @@ import {
   TextInput,
   View
 } from "react-native";
-import {useLocalSearchParams} from "expo-router";
+import {useLocalSearchParams, useRouter} from "expo-router";
 import {globalStyles} from "../../styles/globalStyles";
 import {colors} from "../../styles/colors";
 import * as ImagePicker from "expo-image-picker";
@@ -34,6 +34,7 @@ const syncStatusToServer = async (status: ThreadStatus) => {
 
 export default function ChatThread() {
   const {threadId} = useLocalSearchParams<{ threadId: string }>();
+  const router = useRouter();
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [text, setText] = useState("");
   const [expanded, setExpanded] = useState(false);
@@ -67,7 +68,10 @@ export default function ChatThread() {
     return "Status: In progress";
   }, [status]);
 
+  const canInteract = status === "placed";
+
   const sendText = () => {
+    if (!canInteract) return;
     const t = text.trim();
     if (!t) return;
     setMsgs((m) => [...m, {id: `${Date.now()}`, from: "me", text: t, ts: Date.now()}]);
@@ -76,6 +80,7 @@ export default function ChatThread() {
   };
 
   const handleImageResult = (res: ImagePicker.ImagePickerResult) => {
+    if (!canInteract) return;
     if (res.canceled || !res.assets?.length) return;
     const uri = res.assets[0].uri;
     setMsgs((m) => [...m, {id: `${Date.now()}`, from: "me", imageUri: uri, ts: Date.now()}]);
@@ -84,6 +89,7 @@ export default function ChatThread() {
   };
 
   const sendImageFromLibrary = async () => {
+    if (!canInteract) return;
     const {status} = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") return;
     const res = await ImagePicker.launchImageLibraryAsync({
@@ -94,6 +100,7 @@ export default function ChatThread() {
   };
 
   const sendImageFromCamera = async () => {
+    if (!canInteract) return;
     const {status} = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== "granted") return;
     const res = await ImagePicker.launchCameraAsync({quality: 0.8});
@@ -101,6 +108,7 @@ export default function ChatThread() {
   };
 
   const openLocationPicker = () => {
+    if (!canInteract) return;
     setPickerVisible(true);
     setExpanded(false);
   };
@@ -151,7 +159,9 @@ export default function ChatThread() {
           onPress: async () => {
             const next: ThreadStatus = "completed";
             setStatus(next);
+            setExpanded(false);
             await syncStatusToServer(next);
+            router.replace("/order");
           }
         },
         {
@@ -160,7 +170,9 @@ export default function ChatThread() {
           onPress: async () => {
             const next: ThreadStatus = "cancelled";
             setStatus(next);
+            setExpanded(false);
             await syncStatusToServer(next);
+            router.replace("/order");
           }
         },
         {
@@ -226,20 +238,21 @@ export default function ChatThread() {
       {expanded ? (
         <View style={styles.plusMenuWrap} pointerEvents="box-none">
           <View style={styles.plusMenuCard}>
-            <Pressable
-              onPress={handleStatusPress}
-              style={[styles.menuIconBtn, styles.statusMenuBtn]}
-              disabled={status !== "placed"}
-            >
-              <CheckCircle2 size={20} color={colors.white}/>
-            </Pressable>
-            <Pressable onPress={openLocationPicker} style={styles.menuIconBtn}>
+            {status === "placed" ? (
+              <Pressable
+                onPress={handleStatusPress}
+                style={[styles.menuIconBtn, styles.statusMenuBtn]}
+              >
+                <CheckCircle2 size={20} color={colors.white}/>
+              </Pressable>
+            ) : null}
+            <Pressable onPress={openLocationPicker} style={styles.menuIconBtn} disabled={!canInteract}>
               <MapPin size={20} color={colors.textPrimary}/>
             </Pressable>
-            <Pressable onPress={sendImageFromCamera} style={styles.menuIconBtn}>
+            <Pressable onPress={sendImageFromCamera} style={styles.menuIconBtn} disabled={!canInteract}>
               <Camera size={20} color={colors.textPrimary}/>
             </Pressable>
-            <Pressable onPress={sendImageFromLibrary} style={styles.menuIconBtn}>
+            <Pressable onPress={sendImageFromLibrary} style={styles.menuIconBtn} disabled={!canInteract}>
               <ImageIcon size={20} color={colors.textPrimary}/>
             </Pressable>
           </View>
@@ -247,7 +260,11 @@ export default function ChatThread() {
       ) : null}
 
       <View style={styles.inputBar}>
-        <Pressable onPress={() => setExpanded((v) => !v)} style={styles.plusBtn}>
+        <Pressable
+          onPress={() => setExpanded((v) => !v)}
+          style={[styles.plusBtn, !canInteract && {opacity: 0.4}]}
+          disabled={!canInteract}
+        >
           <Plus size={20} color={colors.textPrimary}/>
         </Pressable>
         <TextInput
@@ -258,8 +275,13 @@ export default function ChatThread() {
           onChangeText={setText}
           returnKeyType="send"
           onSubmitEditing={sendText}
+          editable={canInteract}
         />
-        <Pressable onPress={sendText} style={styles.sendBtn}>
+        <Pressable
+          onPress={sendText}
+          style={[styles.sendBtn, !canInteract && {opacity: 0.4}]}
+          disabled={!canInteract}
+        >
           <Send size={18} color={colors.white}/>
         </Pressable>
       </View>
