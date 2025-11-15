@@ -3,26 +3,7 @@ import {useCallback} from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {useFetch} from "./fetch-client";
 import {BASE_URL} from "../../constant";
-
-type ProductDTO = {
-  id: string;
-  title: string;
-  description?: string;
-  price: number;
-  picture_url?: string;
-  category?: string;
-  seller_username?: string;
-  quantity?: number;
-};
-
-type CreateProductDTO = {
-  title: string;
-  description: string;
-  price: number;
-  picture_url: string;
-  category: string;
-  quantity: number;
-};
+import {CreateProductDTO, ProductDTO} from "../../interfaces/Product.interface";
 
 export const useProductApi = () => {
   const {getData} = useFetch();

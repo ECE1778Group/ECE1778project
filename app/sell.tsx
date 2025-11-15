@@ -13,12 +13,14 @@ import {
   View
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
+import * as Notifications from "expo-notifications";
 import {useRouter} from "expo-router";
 import {globalStyles} from "../styles/globalStyles";
 import {colors} from "../styles/colors";
 import {ItemKind} from "../types";
 import {useAuth} from "../contexts/AuthContext";
 import {useProductApi} from "../lib/api/product";
+import {ensureNotificationSetup} from "../lib/api/notifications";
 import {Camera, Image as ImageIcon, Plus, X} from "lucide-react-native";
 
 export default function Sell() {
@@ -159,10 +161,32 @@ export default function Sell() {
       };
 
       await addProduct(payload);
-      Alert.alert("Listed", "Your item has been created.");
+      await ensureNotificationSetup();
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: "Listing created",
+          body: `"${title.trim()}" is now live`,
+          data: {
+            action: "sell_success",
+            title: title.trim(),
+            price: Number(price),
+          },
+        },
+        trigger: null,
+      });
       router.push("/");
     } catch (e: any) {
-      Alert.alert("Failed", e?.message || "Unable to create item.");
+      await ensureNotificationSetup();
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: "Failed to create listing",
+          body: e?.message ? String(e.message) : "Unable to create item.",
+          data: {
+            action: "sell_failed",
+          },
+        },
+        trigger: null,
+      });
     }
   };
 

@@ -1,16 +1,6 @@
 import * as Notifications from "expo-notifications";
 import {Platform} from "react-native";
-
-type OrderPlacedPayload = {
-  order_number: string;
-  total_amount?: number;
-  created_at?: string;
-};
-
-type OrderStatusPayload = {
-  order_number: string;
-  status: string;
-};
+import {OrderPlacedPayload, OrderStatusPayload} from "../../interfaces/Notification.interface";
 
 let initialized = false;
 
