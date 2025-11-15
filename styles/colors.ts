@@ -11,4 +11,5 @@ export const colors = {
   secondaryPressed: "#a1a6ab",
   danger: "#dc3545",
   dangerPressed: "#a71d31",
+  textSecondary: "#666", 
 };

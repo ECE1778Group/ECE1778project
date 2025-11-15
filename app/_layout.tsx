@@ -91,11 +91,14 @@ function AppShell() {
         tabBarLabel: "Order",
         tabBarIcon: ({color, size}) => <Package color={color} size={size}/>
       }}/>
-      <Tabs.Screen name="profile" options={{
-        title: "Profile",
-        tabBarLabel: "Profile",
-        tabBarIcon: ({color, size}) => <User color={color} size={size}/>
-      }}/>
+      <Tabs.Screen
+        name="profile/index"
+        options={{
+          title: "Profile",
+          tabBarLabel: "Profile",
+          tabBarIcon: ({ color, size }) => <User color={color} size={size} />,
+        }}
+      />
 
       <Tabs.Screen name="cart" options={{title: "Cart", href: null, headerLeft: () => <BackButton/>}}/>
       <Tabs.Screen name="item/[id]" options={{title: "Item Details", href: null, headerLeft: () => <BackButton/>}}/>
@@ -103,6 +106,7 @@ function AppShell() {
       <Tabs.Screen name="chat/[threadId]" options={{title: "Chat", href: null, headerLeft: () => <BackButton/>}}/>
 
       <Tabs.Screen name="settings" options={{title: "Settings", href: null, headerLeft: () => <BackButton/>}}/>
+      <Tabs.Screen name="profile/edit" options={{title: "Edit Profile", href: null, headerLeft: () => <BackButton />,}}/>
     </Tabs>
   );
 }
