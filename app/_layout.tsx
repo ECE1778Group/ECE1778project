@@ -35,7 +35,7 @@ function AppShell() {
       if (data?.action === "open_order" && data.order_number) {
         router.push({
           pathname: "/order/[id]",
-          params: {order_number: String(data.order_number)},
+          params: {id: String(data.order_number)},
         });
       }
     });
@@ -96,7 +96,7 @@ function AppShell() {
         options={{
           title: "Profile",
           tabBarLabel: "Profile",
-          tabBarIcon: ({ color, size }) => <User color={color} size={size} />,
+          tabBarIcon: ({color, size}) => <User color={color} size={size}/>,
         }}
       />
 
@@ -106,7 +106,7 @@ function AppShell() {
       <Tabs.Screen name="chat/[threadId]" options={{title: "Chat", href: null, headerLeft: () => <BackButton/>}}/>
 
       <Tabs.Screen name="settings" options={{title: "Settings", href: null, headerLeft: () => <BackButton/>}}/>
-      <Tabs.Screen name="profile/edit" options={{title: "Edit Profile", href: null, headerLeft: () => <BackButton />,}}/>
+      <Tabs.Screen name="profile/edit" options={{title: "Edit Profile", href: null, headerLeft: () => <BackButton/>,}}/>
     </Tabs>
   );
 }
