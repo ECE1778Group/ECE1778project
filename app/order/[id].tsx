@@ -1,5 +1,5 @@
 import React, {useCallback, useEffect, useState} from "react";
-import {FlatList, RefreshControl, StyleSheet, Text, View,} from "react-native";
+import {FlatList, RefreshControl, StyleSheet, Text, View} from "react-native";
 import {useLocalSearchParams, useRouter} from "expo-router";
 import {globalStyles} from "../../styles/globalStyles";
 import {colors} from "../../styles/colors";
@@ -9,13 +9,14 @@ import {useProductApi} from "../../lib/api/product";
 import {OrderStatus} from "../../types";
 import {IMAGE_URL_PREFIX} from "../../constant";
 
-
 type OrderItemView = {
   id: string;
   title: string;
   price: number;
   imageUrl?: string;
   status: OrderStatus;
+  category?: string;
+  sellerUsername?: string;
 };
 
 export default function OrderDetail() {
@@ -82,6 +83,9 @@ export default function OrderDetail() {
             picture = IMAGE_URL_PREFIX + picture.replace(/^\/+/, "");
           }
           const status = (it.status as OrderStatus) || "placed";
+          const catRaw = product?.category ? String(product.category) : "";
+          const sellerUsername =
+            typeof product?.seller_username === "string" ? product.seller_username : undefined;
           return {
             id: String(it.product_id),
             title: product?.title || `Item ${it.product_id}`,
@@ -91,6 +95,8 @@ export default function OrderDetail() {
                 : Number(it.unit_price) || 0,
             imageUrl: picture,
             status,
+            category: catRaw || undefined,
+            sellerUsername,
           };
         });
 
@@ -169,6 +175,8 @@ export default function OrderDetail() {
             title={item.title}
             price={item.price}
             imageUrl={item.imageUrl}
+            category={item.category}
+            sellerUsername={item.sellerUsername}
             orderStatus={item.status}
             onPress={() =>
               router.push({pathname: "/chat/[id]", params: {id: item.id}})
