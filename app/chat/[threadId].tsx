@@ -1,6 +1,7 @@
 import React, {useEffect, useMemo, useRef, useState} from "react";
 import {
   Alert,
+  Animated,
   Dimensions,
   FlatList,
   Image,
@@ -46,6 +47,7 @@ export default function ChatThread() {
   const [status, setStatus] = useState<ThreadStatus>("placed");
 
   const listRef = useRef<FlatList<Msg>>(null);
+  const menuAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     (async () => {
@@ -59,6 +61,17 @@ export default function ChatThread() {
       }
     })();
   }, []);
+
+  useEffect(() => {
+    if (expanded) {
+      menuAnim.setValue(0);
+      Animated.timing(menuAnim, {
+        toValue: 1,
+        duration: 220,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [expanded, menuAnim]);
 
   const data = useMemo(() => msgs.slice().sort((a, b) => a.ts - b.ts), [msgs]);
 
@@ -220,6 +233,11 @@ export default function ChatThread() {
     );
   };
 
+  const menuTranslateY = menuAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [20, 0],
+  });
+
   return (
     <View style={globalStyles.container}>
       <View style={styles.header}>
@@ -237,7 +255,12 @@ export default function ChatThread() {
 
       {expanded ? (
         <View style={styles.plusMenuWrap} pointerEvents="box-none">
-          <View style={styles.plusMenuCard}>
+          <Animated.View
+            style={[
+              styles.plusMenuCard,
+              {opacity: menuAnim, transform: [{translateY: menuTranslateY}]},
+            ]}
+          >
             {status === "placed" ? (
               <Pressable
                 onPress={handleStatusPress}
@@ -255,7 +278,7 @@ export default function ChatThread() {
             <Pressable onPress={sendImageFromLibrary} style={styles.menuIconBtn} disabled={!canInteract}>
               <ImageIcon size={20} color={colors.textPrimary}/>
             </Pressable>
-          </View>
+          </Animated.View>
         </View>
       ) : null}
 
