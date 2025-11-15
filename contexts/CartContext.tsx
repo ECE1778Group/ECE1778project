@@ -5,7 +5,6 @@ export type CartEntry = {
   id: string;
   price: number;
   imageUrl?: string;
-  distanceKm?: number;
   quantity: number;
   maxQuantity: number;
 };
@@ -56,7 +55,6 @@ export function CartProvider({children}: { children: React.ReactNode }) {
           id: item.id,
           price: item.price,
           imageUrl: item.imageUrl,
-          distanceKm: item.distanceKm,
           quantity: initial,
           maxQuantity: max,
         },

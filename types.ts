@@ -6,16 +6,14 @@ export type BaseItem = {
   title: string;
   price: number;
   imageUrl?: string;
-  distanceKm?: number;
   createdAt?: string | number | Date;
-  courseCode?: string;
+  category: string;
+  sellerUsername: string;
   stock?: number;
 };
 
 export type BookItem = BaseItem & {
   kind: "book";
-  isbn?: string;
-  authors?: string[];
 };
 
 export type OtherItem = BaseItem & {

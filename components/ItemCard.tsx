@@ -11,9 +11,9 @@ export type ItemCardProps = {
   title: string;
   price: number;
   imageUrl?: string;
-  distanceKm?: number;
-  courseCode?: string;
-  createdAt?: string | number | Date;
+  category?: string;
+  sellerUsername?: string;
+  quantity?: number;
   onPress?: () => void;
   orderStatus?: OrderStatus;
 };
@@ -24,26 +24,22 @@ function formatPrice(n: number) {
   return `$${n.toFixed(n % 1 === 0 ? 0 : 2)}`;
 }
 
-function formatTimeAgo(d?: string | number | Date) {
-  if (!d) return "";
-  const t = new Date(d).getTime();
-  if (!isFinite(t)) return "";
-  const diff = Date.now() - t;
-  if (diff < 60_000) return "just now";
-  if (diff < 3_600_000) return `${Math.floor(diff / 60_000)}m`;
-  if (diff < 86_400_000) return `${Math.floor(diff / 3_600_000)}h`;
-  return `${Math.floor(diff / 86_400_000)}d`;
-}
-
 export default function ItemCard(props: ItemCardProps) {
-  const {id, title, price, imageUrl, distanceKm, courseCode, createdAt, onPress, orderStatus} = props;
+  const {
+    id,
+    title,
+    price,
+    imageUrl,
+    category,
+    sellerUsername,
+    onPress,
+    orderStatus,
+  } = props;
+
   const router = useRouter();
-  const timeAgo = useMemo(() => formatTimeAgo(createdAt), [createdAt]);
+
   const priceText = useMemo(() => formatPrice(price), [price]);
-  const distanceText = useMemo(
-    () => (distanceKm != null ? `${distanceKm.toFixed(1)} km` : ""),
-    [distanceKm]
-  );
+
   const displayUrl = useMemo(() => {
     if (!imageUrl) return undefined;
     if (/^https?:\/\//i.test(imageUrl)) return imageUrl;
@@ -88,43 +84,44 @@ export default function ItemCard(props: ItemCardProps) {
             </View>
           )}
         </View>
+
         <View style={styles.info}>
           <Text numberOfLines={2} style={styles.title}>
             {title}
           </Text>
-          <View style={styles.metaRow}>
-            {courseCode ? (
-              <View style={styles.tag}>
-                <Text style={styles.tagText}>{courseCode}</Text>
-              </View>
-            ) : null}
-            {distanceText ? (
-              <View style={styles.tag}>
-                <Text style={styles.tagText}>{distanceText}</Text>
-              </View>
-            ) : null}
-            {timeAgo ? (
-              <View style={styles.tagMuted}>
-                <Text style={styles.tagMutedText}>Listed {timeAgo} ago</Text>
-              </View>
-            ) : null}
-          </View>
-          <View style={styles.footerRow}>
-            <View style={styles.priceBadge}>
-              <Text style={styles.priceText}>{priceText}</Text>
+
+          {(category || sellerUsername) ? (
+            <View style={styles.subRow}>
+              {category ? (
+                <Text numberOfLines={1} style={styles.categoryText}>
+                  {category}
+                </Text>
+              ) : null}
+              {sellerUsername ? (
+                <Text numberOfLines={1} style={styles.sellerText}>
+                  {category ? " · " : ""}@{sellerUsername}
+                </Text>
+              ) : null}
             </View>
+          ) : null}
+
+          <View style={styles.footerRow}>
             {statusText && statusStyle ? (
               <View
                 style={[
-                  styles.statusPill,
+                  styles.statusBadge,
                   {backgroundColor: statusStyle.bg, borderColor: statusStyle.border},
                 ]}
               >
-                <Text style={[styles.statusPillText, {color: statusStyle.fg}]}>
+                <Text style={[styles.statusText, {color: statusStyle.fg}]}>
                   {statusText}
                 </Text>
               </View>
             ) : null}
+
+            <View style={styles.priceBadge}>
+              <Text style={styles.priceText}>{priceText}</Text>
+            </View>
           </View>
         </View>
       </View>
@@ -165,49 +162,41 @@ const styles = StyleSheet.create({
   },
   title: {
     color: colors.textPrimary,
-    fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 6,
+    fontSize: 18,
+    fontWeight: "700",
+    marginBottom: 4,
   },
-  metaRow: {
+  subRow: {
     flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 6,
+    alignItems: "center",
     marginBottom: 8,
   },
-  tag: {
-    ...globalStyles.tag,
+  categoryText: {
+    color: colors.textPrimary,
+    fontSize: 13,
+    fontWeight: "600",
   },
-  tagText: {
-    ...globalStyles.tagText,
-  },
-  tagMuted: {
-    backgroundColor: colors.white,
-    borderColor: colors.border,
-    borderWidth: 1,
-    borderRadius: 6,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-  },
-  tagMutedText: {
-    color: colors.placeholder,
-    fontSize: 12,
+  sellerText: {
+    color: (colors as any).textSecondary || colors.placeholder,
+    fontSize: 13,
   },
   footerRow: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
   },
   priceBadge: {
     ...globalStyles.priceBadge,
+    marginLeft: "auto",
   },
   priceText: {
     ...globalStyles.priceText,
   },
-  statusPill: {
+  statusBadge: {
     ...globalStyles.statusPill,
+    alignSelf: "flex-start",
+    paddingVertical: 6,
   },
-  statusPillText: {
+  statusText: {
     fontSize: 12,
     fontWeight: "700",
   },

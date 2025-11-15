@@ -28,7 +28,8 @@ export default function Market() {
   const lastClipboardRef = useRef<string | null>(null);
 
   const mapToItem = useCallback((p: any): MarketplaceItem => {
-    const cat = String(p?.category ?? "").toLowerCase();
+    const catRaw = String(p?.category ?? "");
+    const cat = catRaw.toLowerCase();
     const isBook = cat.includes("book");
     return {
       id: String(p.id),
@@ -36,13 +37,10 @@ export default function Market() {
       title: String(p.title),
       price: Number(p.price) || 0,
       imageUrl: p.picture_url || undefined,
-      distanceKm: undefined,
-      courseCode: undefined,
       createdAt: undefined,
       stock: typeof p.quantity === "number" ? p.quantity : undefined,
-      category: isBook ? undefined : (p.category as string | undefined),
-      authors: undefined,
-      isbn: undefined,
+      category: catRaw || (isBook ? "book" : undefined),
+      sellerUsername: typeof p.seller_username === "string" ? p.seller_username : undefined,
     } as MarketplaceItem;
   }, []);
 
@@ -215,10 +213,9 @@ export default function Market() {
             id={item.id}
             title={item.title}
             price={item.price}
-            imageUrl={"imageUrl" in item ? item.imageUrl : undefined}
-            distanceKm={"distanceKm" in item ? item.distanceKm : undefined}
-            courseCode={"courseCode" in item ? item.courseCode : undefined}
-            createdAt={"createdAt" in item ? item.createdAt : undefined}
+            imageUrl={item.imageUrl}
+            category={item.category}
+            sellerUsername={item.sellerUsername}
             onPress={() => router.push({pathname: "/item/[id]", params: {id: item.id}})}
           />
         )}

@@ -8,7 +8,6 @@ export type CartItemProps = {
   id: string;
   price: number;
   imageUrl?: string;
-  distanceKm?: number;
   quantity: number;
   maxQuantity: number;
   onChangeQuantity?: (id: string, qty: number) => void;
@@ -22,11 +21,10 @@ function formatPrice(n: number) {
 }
 
 export default function CartItem(props: CartItemProps) {
-  const {id, price, imageUrl, distanceKm, quantity, maxQuantity, onChangeQuantity, onRemove} = props;
+  const {id, price, imageUrl, quantity, maxQuantity, onChangeQuantity, onRemove} = props;
 
   const qty = useMemo(() => Math.max(0, Math.min(quantity, Math.max(1, maxQuantity))), [quantity, maxQuantity]);
   const priceText = useMemo(() => formatPrice(price), [price]);
-  const distanceText = useMemo(() => (distanceKm != null ? `${distanceKm.toFixed(1)} km` : ""), [distanceKm]);
 
   const dec = () => {
     const next = qty - 1;
@@ -64,11 +62,6 @@ export default function CartItem(props: CartItemProps) {
             <View style={styles.priceBadge}>
               <Text style={styles.priceText}>{priceText}</Text>
             </View>
-            {distanceText ? (
-              <View style={styles.tag}>
-                <Text style={styles.tagText}>{distanceText}</Text>
-              </View>
-            ) : null}
             <Pressable onPress={remove} style={styles.removeBtn} accessibilityRole="button"
                        accessibilityLabel="Remove from cart">
               <Trash2 size={18} color={colors.danger}/>
@@ -136,12 +129,6 @@ const styles = StyleSheet.create({
   },
   priceText: {
     ...globalStyles.priceText,
-  },
-  tag: {
-    ...globalStyles.tag,
-  },
-  tagText: {
-    ...globalStyles.tagText,
   },
   removeBtn: {
     marginLeft: "auto",

@@ -63,13 +63,10 @@ export default function ItemDetail() {
         title: String(dto.title),
         price: Number(dto.price) || 0,
         imageUrl: picture || undefined,
-        distanceKm: undefined,
-        courseCode: undefined,
         createdAt: undefined,
+        category: dto.category as string,
+        sellerUsername: dto.seller_username as string,
         stock: typeof dto.quantity === "number" ? dto.quantity : undefined,
-        category: isBook ? undefined : (dto.category as string | undefined),
-        authors: undefined,
-        isbn: undefined,
         description: dto.description || undefined,
       };
 
@@ -190,16 +187,6 @@ export default function ItemDetail() {
         <Text style={styles.price}>{formatPrice(item.price)}</Text>
 
         <View style={styles.metaRow}>
-          {item.courseCode ? (
-            <View style={styles.tag}>
-              <Text style={styles.tagText}>{item.courseCode}</Text>
-            </View>
-          ) : null}
-          {item.distanceKm != null ? (
-            <View style={styles.tag}>
-              <Text style={styles.tagText}>{item.distanceKm.toFixed(1)} km</Text>
-            </View>
-          ) : null}
           {item.stock != null ? (
             <View style={styles.tag}>
               <Text style={styles.tagText}>Stock {item.stock}</Text>

@@ -58,7 +58,6 @@ export default function Cart() {
                 id={item.id}
                 price={item.price}
                 imageUrl={item.imageUrl}
-                distanceKm={item.distanceKm}
                 quantity={item.quantity}
                 maxQuantity={item.maxQuantity}
                 onChangeQuantity={changeQuantity}
