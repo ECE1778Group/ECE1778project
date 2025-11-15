@@ -104,22 +104,17 @@ export default function Market() {
   }, [text, searchProducts, applySearchResults]);
 
   useFocusEffect(
-    React.useCallback(() => {
+    useCallback(() => {
       let cancelled = false;
-
-      const run = async () => {
-        await handleRefresh();
-        setTimeout(() => {
-          if (!cancelled) {
-            handleRefresh();
-          }
-        }, 800);
-      };
-
-      run();
+      const timer = setTimeout(() => {
+        if (!cancelled) {
+          handleRefresh();
+        }
+      }, 800);
 
       return () => {
         cancelled = true;
+        clearTimeout(timer);
       };
     }, [handleRefresh])
   );
