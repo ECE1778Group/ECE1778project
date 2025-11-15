@@ -26,11 +26,6 @@ export default function Market() {
   const {searchProducts} = useProductApi();
 
   const lastClipboardRef = useRef<string | null>(null);
-  const textRef = useRef(text);
-
-  useEffect(() => {
-    textRef.current = text;
-  }, [text]);
 
   const mapToItem = useCallback((p: any): MarketplaceItem => {
     const cat = String(p?.category ?? "").toLowerCase();
@@ -72,28 +67,6 @@ export default function Market() {
     [mapToItem]
   );
 
-  useFocusEffect(
-    useCallback(() => {
-      const run = async () => {
-        const q = textRef.current.trim();
-        const keyword = q || "all";
-        try {
-          const res = await searchProducts(keyword);
-          applySearchResults(res);
-        } catch {
-          setData([]);
-          setPriceRange(null);
-          setSelectedMinPrice(null);
-          setSelectedMaxPrice(null);
-          setFilterVisible(false);
-        } finally {
-          setHasSearched(true);
-        }
-      };
-      run();
-    }, [searchProducts, applySearchResults])
-  );
-
   const handleSearch = useCallback(async () => {
     const q = text.trim();
     const keyword = q || "all";
@@ -129,6 +102,27 @@ export default function Market() {
       setRefreshing(false);
     }
   }, [text, searchProducts, applySearchResults]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      let cancelled = false;
+
+      const run = async () => {
+        await handleRefresh();
+        setTimeout(() => {
+          if (!cancelled) {
+            handleRefresh();
+          }
+        }, 800);
+      };
+
+      run();
+
+      return () => {
+        cancelled = true;
+      };
+    }, [handleRefresh])
+  );
 
   const checkClipboardForShare = useCallback(async () => {
     try {
