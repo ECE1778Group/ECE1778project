@@ -34,6 +34,7 @@ export function getOrderStatus(orderNumber: string, fallback: OrderStatus = "pla
 
 export async function setOrderStatus(orderNumber: string, status: OrderStatus) {
   memoryStore.set(orderNumber, status);
+  if (status === "placed") return;
   await notifyOrderStatus({order_number: orderNumber, status});
 }
 
