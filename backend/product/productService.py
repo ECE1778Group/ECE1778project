@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 def list_products_by_keyword(keyword: str, sort_field: str = "price", sort_order: str = "desc") -> list[dict]:
-    if keyword != "all":
+    if keyword != "All":
         query_part = {
             "multi_match": {
                 "query": keyword,
