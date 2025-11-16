@@ -22,7 +22,7 @@ class ProductListView(APIView):
         data = request.GET
         logger.info(data)
         keyword = data['keyword']
-        keyword = keyword.capitalize()
+        keyword = keyword.lower()
         if keyword:
             products: list[dict] = productService.list_products_by_keyword(keyword)
             serializer = ProductSerializer(products, many=True)
