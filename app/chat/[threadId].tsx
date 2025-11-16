@@ -21,6 +21,8 @@ import * as ImagePicker from "expo-image-picker";
 import * as Location from "expo-location";
 import MapView, {Marker, Region} from "react-native-maps";
 import {Camera, CheckCircle2, Image as ImageIcon, MapPin, Plus, Send} from "lucide-react-native";
+import {BASE_URL} from "../../constant";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 type Msg =
   | { id: string; from: "me" | "peer"; text: string; ts: number }
@@ -32,7 +34,7 @@ type ThreadStatus = "placed" | "completed" | "cancelled";
 const syncStatusToServer = async (status: ThreadStatus) => {
   return;
 };
-
+let websocketConnection: WebSocket|undefined = undefined
 export default function ChatThread() {
   const {threadId} = useLocalSearchParams<{ threadId: string }>();
   const router = useRouter();
@@ -90,6 +92,24 @@ export default function ChatThread() {
     setMsgs((m) => [...m, {id: `${Date.now()}`, from: "me", text: t, ts: Date.now()}]);
     setText("");
     requestAnimationFrame(() => listRef.current?.scrollToEnd({animated: true}));
+
+    let sendMsg = {
+        "type": "chat_message",
+        "me": "testuser1",
+        "peer": "testuser2",
+        "message": t
+    }
+    console.log(JSON.stringify(sendMsg));
+    if (websocketConnection){
+        websocketConnection.send(JSON.stringify(sendMsg))
+    }else {
+        let token = await AsyncStorage.getItem("access")
+        websocketConnection = new WebSocket(`${BASE_URL}/chat/?token=${token}`);
+        console.log("connected to ws");
+    }
+
+
+
   };
 
   const handleImageResult = (res: ImagePicker.ImagePickerResult) => {
