@@ -202,6 +202,7 @@ export default function Market() {
           returnKeyType="search"
           clearButtonMode="while-editing"
           onSubmitEditing={handleSearch}
+          autoCapitalize={"none"}
         />
       </View>
 
