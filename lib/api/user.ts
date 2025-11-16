@@ -22,7 +22,7 @@ export const useUserApi = () => {
   };
 
   const signin = async (email: string, password: string) => {
-    return await postData("/api/user/signin/", {email, password});
+    return await postData("/api/user/signin/", {email, password}, false);
   };
 
   const verifyToken = async (access: string) => {
