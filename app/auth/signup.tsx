@@ -153,11 +153,7 @@ export default function Signup() {
         value={password}
         onChangeText={setPassword}
         textContentType="newPassword"
-<<<<<<< HEAD
-        autoComplete="password-new"
-=======
         autoComplete="new-password"
->>>>>>> main
         importantForAutofill="no"
         secureTextEntry
         style={styles.input}

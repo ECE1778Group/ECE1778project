@@ -156,19 +156,6 @@ export default function ProfileScreen() {
           />
         )}
       </View>
-
-      {/* Sign out */}
-      {!editing && (
-        <Pressable
-          style={styles.signoutBtn}
-          onPress={async () => {
-            await logout();
-            router.replace("/auth/login");
-          }}
-        >
-          <Text style={styles.signoutText}>Sign Out</Text>
-        </Pressable>
-      )}
     </ScrollView>
   );
 }
