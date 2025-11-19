@@ -10,6 +10,7 @@ import {PaperProvider} from "react-native-paper";
 import {MessageProvider} from "../contexts/MessageContext";
 import * as Notifications from "expo-notifications";
 import {ensureNotificationSetup} from "../lib/api/notifications";
+import {WebSocketProvider} from "../contexts/websocketContext";
 
 function AppShell() {
   const {loggedIn, isAuthLoading, user} = useAuth();
@@ -116,11 +117,13 @@ export default function RootLayout() {
     <PaperProvider>
       <MessageProvider>
         <AuthProvider>
-          <CartProvider>
-            <ProfileProvider>
-              <AppShell/>
-            </ProfileProvider>
-          </CartProvider>
+          <WebSocketProvider>
+            <CartProvider>
+              <ProfileProvider>
+                <AppShell/>
+              </ProfileProvider>
+            </CartProvider>
+          </WebSocketProvider>
         </AuthProvider>
       </MessageProvider>
     </PaperProvider>

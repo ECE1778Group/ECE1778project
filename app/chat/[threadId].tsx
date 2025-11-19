@@ -23,6 +23,7 @@ import MapView, {Marker, Region} from "react-native-maps";
 import {Camera, CheckCircle2, Image as ImageIcon, MapPin, Plus, Send} from "lucide-react-native";
 import {BASE_URL} from "../../constant";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import {useWebSocket} from "../../contexts/websocketContext";
 
 type Msg =
   | { id: string; from: "me" | "peer"; text: string; ts: number }
@@ -34,7 +35,7 @@ type ThreadStatus = "placed" | "completed" | "cancelled";
 const syncStatusToServer = async (status: ThreadStatus) => {
   return;
 };
-let websocketConnection: WebSocket|undefined = undefined
+const websocketConnection = useRef<WebSocket | null>(null);
 export default function ChatThread() {
   const {threadId} = useLocalSearchParams<{ threadId: string }>();
   const router = useRouter();
@@ -84,8 +85,10 @@ export default function ChatThread() {
   }, [status]);
 
   const canInteract = status === "placed";
+  const { sendMessage } = useWebSocket();
 
-  const sendText = () => {
+  const sendText = async () => {
+
     if (!canInteract) return;
     const t = text.trim();
     if (!t) return;
@@ -99,17 +102,10 @@ export default function ChatThread() {
         "peer": "testuser2",
         "message": t
     }
-    console.log(JSON.stringify(sendMsg));
-    if (websocketConnection){
-        websocketConnection.send(JSON.stringify(sendMsg))
-    }else {
-        let token = await AsyncStorage.getItem("access")
-        websocketConnection = new WebSocket(`${BASE_URL}/chat/?token=${token}`);
-        console.log("connected to ws");
+    const success = sendMessage(sendMsg)
+    if (!success) {
+      Alert.alert("Error", "Not connected. Please check your network.");
     }
-
-
-
   };
 
   const handleImageResult = (res: ImagePicker.ImagePickerResult) => {
