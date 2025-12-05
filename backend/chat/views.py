@@ -17,6 +17,13 @@ redis_connection = redis.from_url(settings.CHANNEL_LAYERS["default"]["CONFIG"]["
 
 class ChatConsumer(AsyncJsonWebsocketConsumer):
     async def connect(self):
+        """
+        the function is called when the websocket connection is established
+        1. close the connection if token is not provided
+        1. close the connection if token expired
+        3. establish the connection
+        4. put username channel mapping into redis
+        """
         query_string = self.scope["query_string"].decode('utf-8')
         query_dict = QueryDict(query_string)
         if "token" not in query_dict:
@@ -44,10 +51,18 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
 
     async def chat_message(self, event):
+        """
+        handler for message with type 'chat_message' in peer's channel
+        """
         # event = {"type": "chat_message", "message": ..., "sender": ...}
         await self.send_json(event)
 
     async def receive_json(self, content, **kwargs):
+        """
+        handler for message with type 'chat_message' in sender's channel
+        1. get peer's channel from redis by 'peer'
+        2. pass message to peer's channel
+        """
         type = content["type"]
         if type == "chat_message":
             me = content["me"]
