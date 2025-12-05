@@ -122,101 +122,34 @@ Django rest framework, Elasticsearch, Redis, Nginx, Docker, Mysql
 
 #### User Authentication
 
-- **What the requirement asks for**
-
-  > Implement login/logout functionality (e.g., email/password or social provider login). Ensure proper handling of authentication state and secure storage of tokens where applicable.
-
-- **What we implemented**
-
-  - **Backend-managed authentication** using Django + JWT:
-    - Email/username + password login.
-    - Backend issues access and refresh tokens.
-  - **AuthContext** on the client:
-    - Stores tokens and user info in memory.
-    - Persists tokens securely in AsyncStorage.
-    - Exposes `login`, `logout`, and related helpers.
-  - Login flow:
-    - User enters email and password.
-    - On success:
-      - Tokens and user profile are saved to AsyncStorage.
-      - Auth state is updated and user is redirected to the Market screen.
-      - A success Snackbar is shown.
-    - On failure:
-      - An error Snackbar is shown without exposing sensitive details.
-  - This satisfies **User Authentication** as an advanced feature by using backend-managed auth with proper token handling and session persistence.
+- Implements backend-managed authentication with Django + JWT (email/username + password), issuing access and refresh tokens instead of storing credentials on the device.
+- Uses `AuthContext` on the client to manage login/logout, hold the current user and tokens in memory, and persist them securely in AsyncStorage for session restoration.
+- On successful login, tokens and user profile are saved, user is redirected to the Market screen, and feedback is shown via Snackbar; on failure, a non-sensitive error message is displayed.
 
 #### Real-Time Updates
 
-- **What the requirement asks for**
-
-  > Add real-time functionality to your app (e.g., live chat or task updates), with options like WebSockets or realtime BaaS.
-
-- **What we implemented**
-
-  - A **real-time chat** system between buyers and sellers using **WebSockets**:
-    - When users log in, the app can connect to the WebSocket endpoint `ws://{backend_ip}:8000/chat/`.
-    - The backend stores a mapping from username to WebSocket connection.
-  - Chat message format:
-    ```json
-    {
-        "type": "chat_message",
-        "me": "alice",
-        "peer": "bob",
-        "message": "hello"
-    }
-    ```
-    The peer receives:
-    ```json
-    {
-        "type": "chat_message",
-        "message": "hello",
-        "sender": "alice"
-    }
-    ```
-  - The **chat screen** (`app/chat/[threadId].tsx`) listens for messages and updates UI live.
-  - This provides **live updates** without polling and fulfills the **Real-Time Updates** advanced feature.
+- Provides a **live chat** feature between buyers and sellers using WebSockets, connecting to the backend endpoint (e.g., `ws://{backend_ip}:8000/chat/`) after login.
+- The backend maintains a mapping between usernames and WebSocket connections and routes messages using a simple JSON protocol with fields like `me`, `peer`, and `message`.
+- The chat screen listens for incoming WebSocket messages and updates the UI in real time without polling.
 
 #### Mobile Sensors or Device APIs
 
-- **What the requirement asks for**
-
-  > Integrate at least one mobile-specific capability using Expo or React Native APIs (e.g., camera, sensors, or location), with proper permission handling.
-
-- **What we implemented**
-
-  - **Location API**:
-    - Uses `expo-location` in the **chat screen** to:
-      - Request foreground location permission.
-      - If granted, obtain current GPS coordinates.
-      - Set the initial region of a `react-native-maps` `MapView` to the user’s approximate location.
-      - If denied, fall back to a default campus coordinate.
-    - Users can pick a meeting location on the map and send it in chat as a special message, so buyer and seller can agree on a meetup point.
-  - **Image picking**:
-    - Uses `expo-image-picker` to attach product photos and chat images (where applicable).
-  - Permission requests and fallback behavior are handled explicitly, satisfying the **Mobile Sensors or Device APIs** requirement (with a focus on **location** and media access).
+- Integrates **location services** via `expo-location`, requesting foreground location permission and using the result to center a `react-native-maps` `MapView` near the user or a default campus coordinate if denied.
+- Allows users to pick a meetup point on the map and send it as a structured location message in chat, helping buyers and sellers coordinate in-person exchanges.
+- Uses `expo-image-picker` to select product photos (and chat images where applicable), with explicit permission handling and fallbacks.
 
 #### Social Sharing
 
-- **What the requirement asks for**
+- Implements a clipboard-based sharing flow on the Market screen using `expo-clipboard` to read specially formatted text like `Item ID: 123` and optional title copied from other apps.
+- When such content is detected, the app shows a temporary banner card with a countdown and actions (e.g., “Open now” / “Later”) that can deep-link directly into the corresponding item detail screen.
+- This cross-app flow lets users share and reopen listings via text in chat, email, or notes; although implemented via clipboard rather than `expo-sharing`.
 
-  > Enable content sharing (e.g., via Expo Sharing) so that users can share app content to other apps or consume content that comes from outside.
+#### Custom Animations
 
-- **What we implemented**
+- The project includes small interactive animations to enhance user experience (Although didn't use React Native Reanimated)
+- The Market clipboard banner and similar transient UI elements are designed to appear and disappear smoothly with timed visibility and progress-style behavior.
+- Buttons, floating actions (e.g., cart access), and certain modals/sheets use simple visual feedback and transition effects (such as gentle scaling or fading and smooth screen transitions via navigation).
 
-  - **Clipboard-based social sharing flow** on the Market screen:
-    - The app uses `expo-clipboard` to read text from the system clipboard.
-    - If the clipboard contains a specially formatted snippet like:
-      ```
-      Item ID: 123
-      Title: Example Item
-      ```
-      the app:
-      - Detects the `Item ID` and optional `Title`.
-      - Shows a temporary “open this item” card at the top of the Market screen.
-      - Includes a countdown progress bar (around 5 seconds) and “Open now” / “Later” actions.
-    - If the user chooses to open, the app navigates directly to that item’s detail screen using the ID.
-  - This allows users to copy item share text from other apps (e.g., chat, email, notes) and quickly jump into the relevant listing in our app.
-  - While this solution uses **clipboard integration** instead of `expo-sharing` itself, it still realizes a **social sharing** experience across apps and therefore counts as the **Social Sharing** advanced feature.
 
 ## User Guide
 
