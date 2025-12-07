@@ -11,7 +11,7 @@
 | Xingda Jiang  | 1007170525     | jasonj.jiang@mail.utoronto.ca |
 | Guanqun Dong  | 1004525301     | TODO: add email               |
 | Zijin Liao    | 1004303489     | TODO: add email               |
-| Tianqi Ju     | 1012870467     | TODO: add email               |
+| Tianqi Ju     | 1012870467     | tianqi.ju@mail.utoronto.ca    |
 
 
 ## Motivation
