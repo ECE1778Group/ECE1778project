@@ -23,9 +23,10 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 
     path('api/user/', include('user.urls')),
-
+    path('api/chat/', include('chat.urls')),
     path('api/product/', include('product.urls')),
     path('api/order/', include('order.urls')),
+
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),        # OpenAPI JSON
     path('api/docs/', SpectacularSwaggerView.as_view(), name='swagger-ui'),  # SwaggerUI
     path('api/redoc/', SpectacularRedocView.as_view(), name='redoc'),
