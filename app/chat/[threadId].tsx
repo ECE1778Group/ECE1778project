@@ -96,6 +96,9 @@ export default function ChatThread() {
           if (m.image_url) {
             return {...base, imageUrl: mapToImageHost(m.image_url)} as ImageMsg;
           }
+          if (m.lat && m.lng) { 
+            return {...base, location: { lat: m.lat, lng: m.lng, address: m.address,}} as LocationMsg;
+          }
           return {...base, text: m.text} as TextMsg;
         });
 
@@ -141,7 +144,23 @@ export default function ChatThread() {
               ts: now,
             } as ImageMsg,
           ]);
-        } else if (data.message) {
+        } 
+        else if (data.location_lat && data.location_lng) {
+          setMsgs((prev) => [
+            ...prev,
+            {
+              id: String(now),
+              from: "peer",
+              location: {
+                lat: data.location_lat,
+                lng: data.location_lng,
+                address: data.address,
+              },
+              ts: now,
+            },
+          ]);
+        }
+        else if (data.message) {
           setMsgs((prev) => [...prev,
             {
               id: String(now),
@@ -386,10 +405,8 @@ export default function ChatThread() {
   };
 
   const confirmLocation = async () => {
-    if (!pickerCoord) {
-      setPickerVisible(false);
-      return;
-    }
+    if (!pickerCoord) return;
+
     let address: string | undefined = undefined;
     try {
       const res = await Location.reverseGeocodeAsync({
@@ -403,24 +420,36 @@ export default function ChatThread() {
           .join(", ");
       }
     } catch {}
+
+    const now = Date.now();
+
     setMsgs((m) => [
       ...m,
       {
-        id: `${Date.now()}`,
+        id: `${now}`,
         from: "me",
         location: {
           lat: pickerCoord.lat,
           lng: pickerCoord.lng,
           address,
         },
-        ts: Date.now(),
+        ts: now,
       } as LocationMsg,
     ]);
+
+    wsRef.current?.send(
+      JSON.stringify({
+        type: "chat_location",
+        me: meUsername,
+        peer: peerUsername,
+        threadId,
+        lat: pickerCoord.lat,
+        lng: pickerCoord.lng,
+        address,
+      })
+    );
     setPickerVisible(false);
     setPickerCoord(undefined);
-    requestAnimationFrame(() =>
-      listRef.current?.scrollToEnd({animated: true}),
-    );
   };
 
   const openMap = (lat: number, lng: number) => {

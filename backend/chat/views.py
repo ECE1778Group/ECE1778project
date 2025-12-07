@@ -176,7 +176,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                         thread=thread,
                         sender=sender_user,
                         text="",
-                        image_url=image_url,   # ✅ 把 URL 存进去
+                        image_url=image_url,
                     )
                     logger.info("ChatMessage saved (image), thread=%s sender=%s", thread_uuid, me)
 
@@ -202,7 +202,59 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             except Exception:
                 logger.exception("send to peer channel error")
             return
+        
+        if msg_type == "chat_location":
+            me = content.get("me")
+            peer = content.get("peer")
+            thread_id = content.get("threadId")
 
+            lat = content.get("lat")
+            lng = content.get("lng")
+            address = content.get("address")
+
+            if not (me and peer and thread_id and lat and lng):
+                logger.warning("WS chat_location missing fields: %s", content)
+                return
+
+            try:
+                sender_user = await sync_to_async(User.objects.get)(username=me)
+
+                thread_uuid = UUID(str(thread_id))
+                thread = await sync_to_async(ChatThread.objects.get)(id=thread_uuid)
+
+                await sync_to_async(ChatMessage.objects.create)(
+                    thread=thread,
+                    sender=sender_user,
+                    text="",
+                    image_url="",
+                    lat=lat,
+                    lng=lng,
+                    address=address,
+                )
+
+                logger.info("ChatMessage saved (location)")
+
+            except Exception:
+                logger.exception("save chat location error")
+
+            try:
+                peer_channel = await sync_to_async(redis_connection.get)(f"ws:u:{peer}")
+                if peer_channel:
+                    await channel_layer.send(
+                        peer_channel.decode("utf-8"),
+                        {
+                            "type": "chat_message",
+                            "message": "",
+                            "sender": me,
+                            "lat": lat,
+                            "lng": lng,
+                            "address": address,
+                        },
+                    )
+            except Exception:
+                logger.exception("send to peer channel error")
+
+            return
         logger.debug("WS receive_json ignore msg_type=%s, content=%s", msg_type, content)
 
 class CreateThreadView(APIView):
@@ -266,6 +318,9 @@ class LoadMessagesView(APIView):
                 "text": m.text,
                 "image_url": m.image_url,
                 "sender": m.sender.username,
+                "lat": m.lat,
+                "lng": m.lng,
+                "address": m.address,
                 "created_at": m.created_at.isoformat(),
             }
             for m in qs
@@ -292,11 +347,14 @@ class LoadThreadsView(APIView):
             if last_msg is None:
                 preview = ""
                 last_time = th.created_at.isoformat()
+
             else:
                 if last_msg.image_url:
                     preview = "[Image]"
-                elif last_msg.text:
+                elif last_msg.text not in (None, ""):
                     preview = last_msg.text
+                elif getattr(last_msg, "lat", None) is not None and getattr(last_msg, "lng", None) is not None:
+                    preview = "[Location]"
                 else:
                     preview = ""
 
