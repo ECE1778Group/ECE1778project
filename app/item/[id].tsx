@@ -10,7 +10,10 @@ import CartFab from "../../components/CartFab";
 import {Share2} from "lucide-react-native";
 import {useProductApi} from "../../lib/api/product";
 import {IMAGE_URL_PREFIX} from "../../constant";
-
+import {useAuth} from "../../contexts/AuthContext";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { BASE_URL } from "../../constant";
+import { useFetch } from "../../lib/api/fetch-client";
 
 type LocalItem = MarketplaceItem & { description?: string };
 
@@ -26,11 +29,15 @@ export default function ItemDetail() {
   const {add} = useCart();
   const {getProduct} = useProductApi();
 
+  const {user} = useAuth();
+  const { postData, loading: creatingThread } = useFetch();
+
   const [item, setItem] = useState<LocalItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
   const reqVer = useRef(0);
+  const isSellerSelf = item?.sellerUsername === user?.username;
 
   useEffect(() => {
     let cancelled = false;
@@ -143,6 +150,27 @@ export default function ItemDetail() {
     }
   };
 
+  const contactSeller = async () => {
+    if (!item) return;
+
+    try {
+      const data = await postData("/api/chat/thread/", {
+        peer_username: item.sellerUsername,
+      });
+      const threadId = String(data.id);
+      console.log("thread: " + threadId)
+      router.push({
+        pathname: "/chat/[threadId]",
+        params: {
+          threadId,
+          peerUsername: item.sellerUsername,
+        },
+      });
+    } catch (e: any) {
+      console.log("contactSeller error", e?.message);
+    }
+  };
+
   if (loading) {
     return (
       <View style={[globalStyles.container, {alignItems: "center", justifyContent: "center"}]}>
@@ -192,6 +220,12 @@ export default function ItemDetail() {
               <Text style={styles.tagText}>Stock {item.stock}</Text>
             </View>
           ) : null}
+
+          {item.sellerUsername ? (
+            <View style={styles.tag}>
+              <Text style={styles.tagText}>Seller {item.sellerUsername}</Text>
+            </View>
+          ) : null}
         </View>
 
         <Text style={styles.sectionTitle}>Details</Text>
@@ -223,15 +257,20 @@ export default function ItemDetail() {
         >
           <Text style={styles.actionText}>Add to Cart</Text>
         </Pressable>
+
         <Pressable
-          style={styles.contactBtn}
-          onPress={() => router.push({pathname: "/chat/[threadId]", params: {threadId: String(id)}})}
+          style={[styles.contactBtn, isSellerSelf && { opacity: 0.5 }]}
+          onPress={contactSeller}
           accessibilityRole="button"
           accessibilityLabel="Contact seller"
+          disabled={isSellerSelf}
         >
-          <Text style={styles.contactText}>Contact Seller</Text>
+          <Text style={styles.contactText}>
+            {isSellerSelf ? "You are the seller" : "Chat"}
+          </Text>
         </Pressable>
       </View>
+
 
       <View ref={fabRef} style={styles.fabWrapper}>
         <CartFab/>
