@@ -4,7 +4,7 @@ from drf_spectacular.utils import extend_schema, OpenApiResponse
 from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.status import HTTP_201_CREATED
+from rest_framework.status import HTTP_200_OK
 from rest_framework.views import APIView
 
 from product import productService
@@ -25,6 +25,9 @@ class ProductDetailsView(APIView):
         },
     )
     def get(self, request: Request, id: str) -> Response:
+        """
+        get product by id, if not found, return 404
+        """
         data = request.data
         logger.info(data)
         product: Product = productService.get_product_by_id(id)
@@ -56,6 +59,10 @@ class ProductDetailsView(APIView):
         },
     )
     def put(self, request: Request, product_id: str) -> Response:
+        """
+        update product details
+        1. verify the request is valid, new picture is provided
+        """
         data = request.data
         picture = request.FILES.get("picture")
         logger.info(data)
@@ -67,6 +74,6 @@ class ProductDetailsView(APIView):
             productService.add_or_update_product(
                 Product(id=product_id, picture_url=picture_url, **serializer.validated_data))
             return Response({'id': product_id, "picture_url": picture_url, **serializer.data},
-                            status=HTTP_201_CREATED)
+                            status=HTTP_200_OK)
         else:
             raise ValidationError(serializer.errors)
