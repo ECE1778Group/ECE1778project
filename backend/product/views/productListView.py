@@ -19,6 +19,9 @@ class ProductListView(APIView):
         responses={200: ProductSerializer(many=True)},
     )
     def get(self,request: HttpRequest):
+        """
+        get products by keyword
+        """
         data = request.GET
         logger.info(data)
         if data.get("keyword"):

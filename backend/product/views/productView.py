@@ -42,6 +42,13 @@ class ProductView(APIView):
         },
     )
     def post(self, request: Request):
+        """
+        add product
+        1. verify the request
+        2. write picture into storage
+        3. write product into elasticsearch
+        4. return product
+        """
         data = request.data
         logger.info(data)
         seller_username = request.user.username
