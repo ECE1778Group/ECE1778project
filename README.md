@@ -319,6 +319,87 @@ docker compose exec backend python manage.py test product
 docker compose exec backend python manage.py test chat
 ```
 
+## Development Guide
+
+This section describes how to set up the local development environment for both backend and frontend, including required tools, environment variables, and local testing.
+
+### Prerequisites
+
+- Node.js and npm (LTS recommended)
+- Python 3.x (for tooling if needed)
+- Docker and Docker Compose
+- Expo CLI (installed via npm)
+- Android Studio or an Android emulator (optional, for local emulator testing)
+- Expo Go app on your physical Android device (for LAN testing)
+
+### Environment variables
+
+**Frontend (project root `.env`)**
+
+Create a file named `.env` in the project root with:
+
+```env
+EXPO_PUBLIC_API_BASE=http://localhost:8000
+EXPO_PUBLIC_IMAGE_BASE=http://localhost:8090/
+```
+
+For testing on a real Android device, replace `localhost` with your computer’s LAN IP (for example `http://192.168.x.x:8000` and `http://192.168.x.x:8090/`), making sure the phone and computer are on the same Wi-Fi network.
+
+**Backend (`backend/.env`)**
+
+Inside the `backend` directory, create a file named `.env` with:
+
+```env
+DB_HOST=db
+DB_NAME=campus
+DB_USER=django
+DB_PASSWORD=supersecret123
+MYSQL_ROOT_PASSWORD=rootsecret123
+```
+
+Add any additional Django settings (for example `SECRET_KEY`, `DEBUG`, etc.) as needed, but keep backend-only variables here and frontend-only variables in the root `.env`.
+
+### Backend setup and local testing
+
+1. From the project root, go to the backend folder:
+   
+   - `cd backend`
+
+2. Make sure `backend/.env` exists as described above.
+
+3. Start the backend services in development mode:
+   
+   - `docker compose --profile dev up --build`
+
+4. Once the containers are running, verify the backend:
+   
+   - API docs: open `http://localhost:8000/api/docs/` in a browser  
+   - Static images: open `http://localhost:8090/`
+
+The backend should now be ready for local development and reachable from the frontend using the configured base URLs.
+
+### Frontend setup and local testing
+
+1. In the project root, ensure `.env` exists as described above.
+
+2. Install dependencies:
+   
+   - `npm install`
+
+3. Start the Expo development server:
+   
+   - `npm run start`
+
+4. For browser- or emulator-based testing, use the Expo Dev Tools interface to open the app in an Android emulator.
+
+5. For testing on a physical Android device:
+   
+   - Make sure the device and your computer are on the same Wi-Fi network.  
+   - Set `EXPO_PUBLIC_API_BASE` and `EXPO_PUBLIC_IMAGE_BASE` in the root `.env` to use your computer’s LAN IP instead of `localhost`.  
+   - Open the Expo Go app on your phone and scan the QR code shown in the terminal or Dev Tools.
+
+With these steps, you can run the backend in Docker and the frontend via Expo, and develop and test the application locally on an emulator or a real Android device.
+
 
 ## Deployment Information
 
