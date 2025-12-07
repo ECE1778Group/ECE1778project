@@ -81,18 +81,17 @@ function AppShell() {
         tabBarLabel: "Market",
         tabBarIcon: ({color, size}) => <Store color={color} size={size}/>
       }}/>
-       <Tabs.Screen
+      <Tabs.Screen name="sell" options={{
+        title: "Sell",
+        tabBarLabel: "Sell",
+        tabBarIcon: ({color, size}) => <Tag color={color} size={size}/>
+      }}/>
+      <Tabs.Screen
         name="chat/index"
         options={{
           title: "Chat",
           tabBarLabel: "Chat",
           tabBarIcon: ({color, size}) => <MessageCircle color={color} size={size}/>,
-        }}
-      />
-      <Tabs.Screen name="sell" options={{
-        title: "Sell",
-        tabBarLabel: "Sell",
-        tabBarIcon: ({color, size}) => <Tag color={color} size={size}/>
       }}/>
       <Tabs.Screen name="order" options={{
         title: "Order",

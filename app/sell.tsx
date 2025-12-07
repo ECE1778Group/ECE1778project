@@ -57,7 +57,7 @@ export default function Sell() {
     } else {
       if (category.trim()) extras.push(`Category:${category.trim()}`);
     }
-    return extras.join("\n") || "";
+    return extras.join("\n") || "No Description";
   };
 
   const pickFromLibrary = async () => {
