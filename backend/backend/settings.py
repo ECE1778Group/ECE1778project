@@ -33,6 +33,7 @@ ALLOWED_HOSTS = ["*"]
 
 INSTALLED_APPS = [
     'daphne',
+    'channels',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -44,6 +45,7 @@ INSTALLED_APPS = [
     'product',
     'user',
     'order',
+    'chat',
     'rest_framework',
     'rest_framework_simplejwt',
 ]

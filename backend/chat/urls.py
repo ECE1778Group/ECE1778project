@@ -15,10 +15,15 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.urls import path
-from .views import ChatConsumer
+from .views import ChatConsumer, LoadMessagesView, CreateThreadView, LoadThreadsView, UploadImageView
 
-
-websocket_urlpatterns  = [
-    path("chat/", ChatConsumer.as_asgi()),
+urlpatterns = [
+    path("thread/", CreateThreadView.as_view(), name="chat-thread"),
+    path("threads/", LoadThreadsView.as_view(), name="chat-threads"),
+    path("thread/<uuid:thread_id>/messages/",LoadMessagesView.as_view(),name="chat-thread-messages",),
+    path("upload-image/", UploadImageView.as_view()),
 ]
 
+websocket_urlpatterns  = [
+    path("chat/", ChatConsumer.as_asgi()), 
+]
