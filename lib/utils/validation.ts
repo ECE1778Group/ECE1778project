@@ -1,6 +1,4 @@
 // lib/utils/validation.ts
-
-/** 验证邮箱格式 */
 export const isValidEmail = (email: string): boolean => {
   const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
   return emailRegex.test(email.trim());
@@ -15,11 +13,10 @@ export const isValidEmail = (email: string): boolean => {
  */
 export const isValidPassword = (password: string): boolean => {
   const passwordRegex =
-    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&,.])[A-Za-z\d@$!%*?&]{8,}$/;
   return passwordRegex.test(password);
 };
 
-/** 验证验证码为 6 位数字 */
 export const isValidCode = (code: string): boolean => {
   const codeRegex = /^\d{6}$/;
   return codeRegex.test(code.trim());

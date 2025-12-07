@@ -21,11 +21,25 @@ import * as ImagePicker from "expo-image-picker";
 import * as Location from "expo-location";
 import MapView, {Marker, Region} from "react-native-maps";
 import {Camera, CheckCircle2, Image as ImageIcon, MapPin, Plus, Send} from "lucide-react-native";
+import {useAuth} from "../../contexts/AuthContext";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import {BASE_URL, IMAGE_URL_PREFIX} from "../../constant";
+import {useFetch} from "../../lib/api/fetch-client";
+import { mapToImageHost } from "../../lib/utils/imageHost";
 
-type Msg =
-  | { id: string; from: "me" | "peer"; text: string; ts: number }
-  | { id: string; from: "me" | "peer"; imageUri: string; ts: number }
-  | { id: string; from: "me" | "peer"; location: { lat: number; lng: number; address?: string }; ts: number };
+type BaseMsg = {
+  id: string;
+  from: "me" | "peer";
+  ts: number;
+};
+
+type TextMsg = BaseMsg & { text: string };
+type ImageMsg = BaseMsg & { imageUrl: string };
+type LocationMsg = BaseMsg & {
+  location: { lat: number; lng: number; address?: string };
+};
+
+type Msg = TextMsg | ImageMsg | LocationMsg;
 
 type ThreadStatus = "placed" | "completed" | "cancelled";
 
@@ -34,20 +48,131 @@ const syncStatusToServer = async (status: ThreadStatus) => {
 };
 
 export default function ChatThread() {
-  const {threadId} = useLocalSearchParams<{ threadId: string }>();
+  const {threadId, peerUsername: peerFromRoute} =
+    useLocalSearchParams<{ threadId: string; peerUsername?: string }>();
   const router = useRouter();
+  const {user} = useAuth();
+  const {getData} = useFetch();
+
+  const meUsername = user.username;
+  const peerUsername = peerFromRoute ? String(peerFromRoute) : "";
+
+  const [token, setToken] = useState<string | null>(null);
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [text, setText] = useState("");
   const [expanded, setExpanded] = useState(false);
-
   const [pickerVisible, setPickerVisible] = useState(false);
   const [pickerRegion, setPickerRegion] = useState<Region | undefined>(undefined);
   const [pickerCoord, setPickerCoord] = useState<{ lat: number; lng: number } | undefined>(undefined);
-
   const [status, setStatus] = useState<ThreadStatus>("placed");
 
   const listRef = useRef<FlatList<Msg>>(null);
   const menuAnim = useRef(new Animated.Value(0)).current;
+
+  const wsRef = useRef<WebSocket | null>(null);
+
+  useEffect(() => {
+    AsyncStorage.getItem("access")
+      .then((value) => {
+        setToken(value);
+      })
+      .catch((err) => {
+        console.warn("Failed to load access token", err);
+      });
+  }, []);
+
+  // Get history message
+  useEffect(() => {
+    if (!threadId) return;
+    (async () => {
+      try {
+        const data = await getData(`/api/chat/thread/${threadId}/messages/`);
+        const mapped: Msg[] = data.map((m: any) => {
+          const base: BaseMsg = {
+            id: String(m.id),
+            from: m.sender === meUsername ? "me" : "peer",
+            ts: new Date(m.created_at).getTime(),
+          };
+          if (m.image_url) {
+            return {...base, imageUrl: mapToImageHost(m.image_url)} as ImageMsg;
+          }
+          return {...base, text: m.text} as TextMsg;
+        });
+
+        setMsgs(mapped);
+        requestAnimationFrame(() =>
+          listRef.current?.scrollToEnd({animated: false}),
+        );
+      } catch (e: any) {
+        console.warn("load messages error", e?.message);
+      }
+    })();
+  }, [threadId, meUsername, getData]);
+
+  useEffect(() => {
+    if (!token || !meUsername) {
+      console.warn("Chat WS: token || meUsername is null");
+      return;
+    }
+
+    const wsBase = BASE_URL.replace(/^http/, "ws");
+    const wsUrl = `${wsBase}/chat/?token=${token}`;
+    const ws = new WebSocket(wsUrl);
+    wsRef.current = ws;
+
+    ws.onopen = () => {
+      console.log("Chat WS connected");
+    };
+
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type !== "chat_message") return;
+        if (data.sender === meUsername) return;
+
+        const now = Date.now();
+
+        if (data.image_url) {
+          setMsgs((prev) => [...prev,
+            {
+              id: String(now),
+              from: "peer",
+              imageUrl: mapToImageHost(data.image_url),
+              ts: now,
+            } as ImageMsg,
+          ]);
+        } else if (data.message) {
+          setMsgs((prev) => [...prev,
+            {
+              id: String(now),
+              from: "peer",
+              text: data.message,
+              ts: now,
+            } as TextMsg,
+          ]);
+        }
+
+        requestAnimationFrame(() =>
+          listRef.current?.scrollToEnd({animated: true}),
+        );
+      } catch (e) {
+        console.warn("WS onmessage parse error", e);
+      }
+    };
+
+    ws.onerror = (e) => {
+      console.warn("Chat WS error", e);
+    };
+
+    ws.onclose = () => {
+      console.log("Chat WS closed");
+    };
+
+    return () => {
+      ws.close();
+      wsRef.current = null;
+    };
+  }, [token, meUsername]);
 
   useEffect(() => {
     (async () => {
@@ -55,9 +180,19 @@ export default function ChatThread() {
       if (status === "granted") {
         const pos = await Location.getCurrentPositionAsync({});
         const {latitude, longitude} = pos.coords;
-        setPickerRegion({latitude, longitude, latitudeDelta: 0.01, longitudeDelta: 0.01});
+        setPickerRegion({
+          latitude,
+          longitude,
+          latitudeDelta: 0.01,
+          longitudeDelta: 0.01,
+        });
       } else {
-        setPickerRegion({latitude: 43.6629, longitude: -79.3957, latitudeDelta: 0.02, longitudeDelta: 0.02});
+        setPickerRegion({
+          latitude: 43.6629,
+          longitude: -79.3957,
+          latitudeDelta: 0.02,
+          longitudeDelta: 0.02,
+        });
       }
     })();
   }, []);
@@ -73,7 +208,10 @@ export default function ChatThread() {
     }
   }, [expanded, menuAnim]);
 
-  const data = useMemo(() => msgs.slice().sort((a, b) => a.ts - b.ts), [msgs]);
+  const data = useMemo(
+    () => msgs.slice().sort((a, b) => a.ts - b.ts),
+    [msgs],
+  );
 
   const statusLabel = useMemo(() => {
     if (status === "completed") return "Status: Completed";
@@ -87,18 +225,139 @@ export default function ChatThread() {
     if (!canInteract) return;
     const t = text.trim();
     if (!t) return;
-    setMsgs((m) => [...m, {id: `${Date.now()}`, from: "me", text: t, ts: Date.now()}]);
+
+    if (
+      wsRef.current &&
+      wsRef.current.readyState === WebSocket.OPEN &&
+      token &&
+      meUsername &&
+      peerUsername
+    ) {
+      try {
+        wsRef.current.send(
+          JSON.stringify({
+            type: "chat_message",
+            me: meUsername,
+            peer: peerUsername,
+            message: t,
+            threadId,
+          }),
+        );
+      } catch (e) {
+        console.warn("WS send error", e);
+      }
+    } else {
+      console.warn("WS not connected");
+    }
+
+    const now = Date.now();
+    setMsgs((m) => [
+      ...m,
+      {id: `${now}`, from: "me", text: t, ts: now} as TextMsg,
+    ]);
     setText("");
-    requestAnimationFrame(() => listRef.current?.scrollToEnd({animated: true}));
+    requestAnimationFrame(() =>
+      listRef.current?.scrollToEnd({animated: true}),
+    );
   };
 
-  const handleImageResult = (res: ImagePicker.ImagePickerResult) => {
+  const uploadChatImage = async (localUri: string): Promise<string> => {
+    try {
+      const jwt = token || (await AsyncStorage.getItem("access"));
+      if (!jwt) {
+        throw new Error("No auth token");
+      }
+
+      const formData = new FormData();
+      const filename = localUri.split("/").pop() || "chat.jpg";
+      const match = /\.(\w+)$/.exec(filename);
+      const ext = match ? match[1].toLowerCase() : "jpg";
+      const mime =
+        ext === "png"
+          ? "image/png"
+          : ext === "heic"
+          ? "image/heic"
+          : "image/jpeg";
+
+      formData.append("image", {
+        uri: localUri,
+        name: filename,
+        type: mime,
+      } as any);
+
+      const res = await fetch(`${BASE_URL}/api/chat/upload-image/`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${jwt}`,
+        },
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.url) {
+        console.log("upload image error", data);
+        throw new Error(data.detail || "Upload failed");
+      }
+
+      const rawUrl: string = data.url;
+
+      const imageUrl = mapToImageHost(rawUrl)!;
+      return imageUrl;
+    } catch (e: any) {
+      console.warn("uploadChatImage error", e?.message);
+      throw e;
+    }
+  };
+
+  const handleImageResult = async (res: ImagePicker.ImagePickerResult) => {
     if (!canInteract) return;
     if (res.canceled || !res.assets?.length) return;
-    const uri = res.assets[0].uri;
-    setMsgs((m) => [...m, {id: `${Date.now()}`, from: "me", imageUri: uri, ts: Date.now()}]);
-    requestAnimationFrame(() => listRef.current?.scrollToEnd({animated: true}));
-    setExpanded(false);
+
+    const localUri = res.assets[0].uri;
+
+    try {
+      const imageUrl = await uploadChatImage(localUri);
+
+      const now = Date.now();
+
+      setMsgs((m) => [
+        ...m,
+        {id: `${now}`, from: "me", imageUrl, ts: now} as ImageMsg,
+      ]);
+      requestAnimationFrame(() =>
+        listRef.current?.scrollToEnd({animated: true}),
+      );
+
+      if (
+        wsRef.current &&
+        wsRef.current.readyState === WebSocket.OPEN &&
+        meUsername &&
+        peerUsername
+      ) {
+        wsRef.current.send(
+          JSON.stringify({
+            type: "chat_image",
+            me: meUsername,
+            peer: peerUsername,
+            threadId,
+            image_url: imageUrl,
+          }),
+        );
+
+        console.log("WS send image", {
+          type: "chat_image",
+          me: meUsername,
+          peer: peerUsername,
+          threadId,
+          image_url: imageUrl,
+        });
+      } else {
+        console.warn("WS not connected, cannot send image message");
+      }
+    } catch {
+    } finally {
+      setExpanded(false);
+    }
   };
 
   const sendImageFromLibrary = async () => {
@@ -107,9 +366,9 @@ export default function ChatThread() {
     if (status !== "granted") return;
     const res = await ImagePicker.launchImageLibraryAsync({
       quality: 0.8,
-      mediaTypes: ["images"]
+      mediaTypes: ["images"],
     });
-    handleImageResult(res);
+    await handleImageResult(res);
   };
 
   const sendImageFromCamera = async () => {
@@ -117,7 +376,7 @@ export default function ChatThread() {
     const {status} = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== "granted") return;
     const res = await ImagePicker.launchCameraAsync({quality: 0.8});
-    handleImageResult(res);
+    await handleImageResult(res);
   };
 
   const openLocationPicker = () => {
@@ -133,22 +392,35 @@ export default function ChatThread() {
     }
     let address: string | undefined = undefined;
     try {
-      const res = await Location.reverseGeocodeAsync({latitude: pickerCoord.lat, longitude: pickerCoord.lng});
+      const res = await Location.reverseGeocodeAsync({
+        latitude: pickerCoord.lat,
+        longitude: pickerCoord.lng,
+      });
       if (res && res[0]) {
         const r = res[0];
-        address = [r.name, r.street, r.city, r.region].filter(Boolean).join(", ");
+        address = [r.name, r.street, r.city, r.region]
+          .filter(Boolean)
+          .join(", ");
       }
-    } catch {
-    }
-    setMsgs((m) => [...m, {
-      id: `${Date.now()}`,
-      from: "me",
-      location: {lat: pickerCoord.lat, lng: pickerCoord.lng, address},
-      ts: Date.now()
-    }]);
+    } catch {}
+    setMsgs((m) => [
+      ...m,
+      {
+        id: `${Date.now()}`,
+        from: "me",
+        location: {
+          lat: pickerCoord.lat,
+          lng: pickerCoord.lng,
+          address,
+        },
+        ts: Date.now(),
+      } as LocationMsg,
+    ]);
     setPickerVisible(false);
     setPickerCoord(undefined);
-    requestAnimationFrame(() => listRef.current?.scrollToEnd({animated: true}));
+    requestAnimationFrame(() =>
+      listRef.current?.scrollToEnd({animated: true}),
+    );
   };
 
   const openMap = (lat: number, lng: number) => {
@@ -175,7 +447,7 @@ export default function ChatThread() {
             setExpanded(false);
             await syncStatusToServer(next);
             router.replace("/order");
-          }
+          },
         },
         {
           text: "Cancelled",
@@ -186,27 +458,51 @@ export default function ChatThread() {
             setExpanded(false);
             await syncStatusToServer(next);
             router.replace("/order");
-          }
+          },
         },
         {
           text: "Close",
-          style: "cancel"
-        }
-      ]
+          style: "cancel",
+        },
+      ],
     );
   };
 
   const renderItem = ({item}: { item: Msg }) => {
     const isMe = item.from === "me";
+    const bubbleStyle = [
+      styles.bubble,
+      isMe ? styles.bubbleMe : styles.bubblePeer,
+    ];
+
     return (
       <View style={[styles.row, isMe ? styles.rowEnd : styles.rowStart]}>
-        <View style={[styles.bubble, isMe ? styles.bubbleMe : styles.bubblePeer]}>
-          {"text" in item ?
-            <Text style={[styles.msgText, isMe ? styles.msgTextMe : styles.msgTextPeer]}>{item.text}</Text> : null}
-          {"imageUri" in item ? <Image source={{uri: item.imageUri}} style={styles.msgImage}/> : null}
+        <View style={bubbleStyle}>
+          {"text" in item && item.text ? (
+            <Text
+              style={[
+                styles.msgText,
+                isMe ? styles.msgTextMe : styles.msgTextPeer,
+              ]}
+            >
+              {item.text}
+            </Text>
+          ) : null}
+
+          {"imageUrl" in item ? (
+            <Image source={{uri: item.imageUrl}} style={styles.msgImage} />
+          ) : null}
+
           {"location" in item ? (
-            <Pressable onPress={() => openMap(item.location.lat, item.location.lng)}
-                       style={[styles.locCard, isMe ? styles.locCardMe : styles.locCardPeer]}>
+            <Pressable
+              onPress={() =>
+                openMap(item.location.lat, item.location.lng)
+              }
+              style={[
+                styles.locCard,
+                isMe ? styles.locCardMe : styles.locCardPeer,
+              ]}
+            >
               <View style={styles.mapThumb}>
                 <MapView
                   style={{flex: 1}}
@@ -215,14 +511,25 @@ export default function ChatThread() {
                     latitude: item.location.lat,
                     longitude: item.location.lng,
                     latitudeDelta: 0.01,
-                    longitudeDelta: 0.01
+                    longitudeDelta: 0.01,
                   }}
                 >
-                  <Marker coordinate={{latitude: item.location.lat, longitude: item.location.lng}}/>
+                  <Marker
+                    coordinate={{
+                      latitude: item.location.lat,
+                      longitude: item.location.lng,
+                    }}
+                  />
                 </MapView>
               </View>
               {item.location.address ? (
-                <Text style={[styles.locText, isMe ? styles.msgTextMe : styles.msgTextPeer]} numberOfLines={2}>
+                <Text
+                  style={[
+                    styles.locText,
+                    isMe ? styles.msgTextMe : styles.msgTextPeer,
+                  ]}
+                  numberOfLines={2}
+                >
                   {item.location.address}
                 </Text>
               ) : null}
@@ -244,13 +551,16 @@ export default function ChatThread() {
         <Text style={styles.sub}>Thread: {String(threadId)}</Text>
         <Text style={styles.status}>{statusLabel}</Text>
       </View>
+
       <FlatList
         ref={listRef}
         data={data}
-        keyExtractor={(m) => m.id}
+        keyExtractor={(m, index) => `${m.id}-${index}`}
         renderItem={renderItem}
         contentContainerStyle={{paddingVertical: 12, paddingHorizontal: 12}}
-        onContentSizeChange={() => listRef.current?.scrollToEnd({animated: false})}
+        onContentSizeChange={() =>
+          listRef.current?.scrollToEnd({animated: false})
+        }
       />
 
       {expanded ? (
@@ -266,17 +576,29 @@ export default function ChatThread() {
                 onPress={handleStatusPress}
                 style={[styles.menuIconBtn, styles.statusMenuBtn]}
               >
-                <CheckCircle2 size={20} color={colors.white}/>
+                <CheckCircle2 size={20} color={colors.white} />
               </Pressable>
             ) : null}
-            <Pressable onPress={openLocationPicker} style={styles.menuIconBtn} disabled={!canInteract}>
-              <MapPin size={20} color={colors.textPrimary}/>
+            <Pressable
+              onPress={openLocationPicker}
+              style={styles.menuIconBtn}
+              disabled={!canInteract}
+            >
+              <MapPin size={20} color={colors.textPrimary} />
             </Pressable>
-            <Pressable onPress={sendImageFromCamera} style={styles.menuIconBtn} disabled={!canInteract}>
-              <Camera size={20} color={colors.textPrimary}/>
+            <Pressable
+              onPress={sendImageFromCamera}
+              style={styles.menuIconBtn}
+              disabled={!canInteract}
+            >
+              <Camera size={20} color={colors.textPrimary} />
             </Pressable>
-            <Pressable onPress={sendImageFromLibrary} style={styles.menuIconBtn} disabled={!canInteract}>
-              <ImageIcon size={20} color={colors.textPrimary}/>
+            <Pressable
+              onPress={sendImageFromLibrary}
+              style={styles.menuIconBtn}
+              disabled={!canInteract}
+            >
+              <ImageIcon size={20} color={colors.textPrimary} />
             </Pressable>
           </Animated.View>
         </View>
@@ -288,7 +610,7 @@ export default function ChatThread() {
           style={[styles.plusBtn, !canInteract && {opacity: 0.4}]}
           disabled={!canInteract}
         >
-          <Plus size={20} color={colors.textPrimary}/>
+          <Plus size={20} color={colors.textPrimary} />
         </Pressable>
         <TextInput
           style={styles.input}
@@ -305,7 +627,7 @@ export default function ChatThread() {
           style={[styles.sendBtn, !canInteract && {opacity: 0.4}]}
           disabled={!canInteract}
         >
-          <Send size={18} color={colors.white}/>
+          <Send size={18} color={colors.white} />
         </Pressable>
       </View>
 
@@ -323,18 +645,31 @@ export default function ChatThread() {
                     setPickerCoord({lat: latitude, lng: longitude});
                   }}
                 >
-                  {pickerCoord ? <Marker coordinate={{latitude: pickerCoord.lat, longitude: pickerCoord.lng}}/> : null}
+                  {pickerCoord ? (
+                    <Marker
+                      coordinate={{
+                        latitude: pickerCoord.lat,
+                        longitude: pickerCoord.lng,
+                      }}
+                    />
+                  ) : null}
                 </MapView>
               ) : null}
             </View>
             <View style={styles.modalActions}>
-              <Pressable style={[styles.modalBtn, styles.modalCancel]} onPress={() => {
-                setPickerVisible(false);
-                setPickerCoord(undefined);
-              }}>
+              <Pressable
+                style={[styles.modalBtn, styles.modalCancel]}
+                onPress={() => {
+                  setPickerVisible(false);
+                  setPickerCoord(undefined);
+                }}
+              >
                 <Text style={styles.modalCancelText}>Cancel</Text>
               </Pressable>
-              <Pressable style={[styles.modalBtn, styles.modalConfirm]} onPress={confirmLocation}>
+              <Pressable
+                style={[styles.modalBtn, styles.modalConfirm]}
+                onPress={confirmLocation}
+              >
                 <Text style={styles.modalConfirmText}>Send</Text>
               </Pressable>
             </View>
@@ -400,6 +735,7 @@ const styles = StyleSheet.create({
     width: 160,
     height: 120,
     borderRadius: 8,
+    marginTop: 4,
   },
   locCard: {
     borderRadius: 10,

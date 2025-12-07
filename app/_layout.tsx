@@ -3,7 +3,7 @@ import {Tabs, useRouter, useSegments} from "expo-router";
 import {CartProvider} from "../contexts/CartContext";
 import {AuthProvider, useAuth} from "../contexts/AuthContext";
 import {ProfileProvider} from "../contexts/ProfileContext";
-import {ArrowLeft, Package, Store, Tag, User} from "lucide-react-native";
+import {ArrowLeft, Package, Store, Tag, User, MessageCircle} from "lucide-react-native";
 import {Pressable} from "react-native";
 import {colors} from "../styles/colors";
 import {PaperProvider} from "react-native-paper";
@@ -81,6 +81,14 @@ function AppShell() {
         tabBarLabel: "Market",
         tabBarIcon: ({color, size}) => <Store color={color} size={size}/>
       }}/>
+       <Tabs.Screen
+        name="chat/index"
+        options={{
+          title: "Chat",
+          tabBarLabel: "Chat",
+          tabBarIcon: ({color, size}) => <MessageCircle color={color} size={size}/>,
+        }}
+      />
       <Tabs.Screen name="sell" options={{
         title: "Sell",
         tabBarLabel: "Sell",
@@ -104,9 +112,9 @@ function AppShell() {
       <Tabs.Screen name="item/[id]" options={{title: "Item Details", href: null, headerLeft: () => <BackButton/>}}/>
       <Tabs.Screen name="order/[id]" options={{title: "Order Details", href: null, headerLeft: () => <BackButton/>}}/>
       <Tabs.Screen name="chat/[threadId]" options={{title: "Chat", href: null, headerLeft: () => <BackButton/>}}/>
-
       <Tabs.Screen name="settings" options={{title: "Settings", href: null, headerLeft: () => <BackButton/>}}/>
-      <Tabs.Screen name="profile/edit" options={{title: "Edit Profile", href: null, headerLeft: () => <BackButton/>,}}/>
+      <Tabs.Screen name="profile/edit" options={{title: "Edit Profile", href: null, headerLeft: () => <BackButton/>}}/>
+      <Tabs.Screen name="profile/posts" options={{title: "View Posts", href: null, headerLeft: () => <BackButton/>}}/>
     </Tabs>
   );
 }
