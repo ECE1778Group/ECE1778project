@@ -10,6 +10,10 @@ logger = logging.getLogger(__name__)
 
 
 def list_products_by_keyword(keyword: str, sort_field: str = "price", sort_order: str = "desc") -> list[dict]:
+    """
+    list products by keyword, if search for all, return all products with quantity>0,
+    otherwise try to match title, category, description in order
+    """
     if keyword != "all":
         query_part = {
             "multi_match": {
@@ -52,6 +56,10 @@ def list_products_by_keyword(keyword: str, sort_field: str = "price", sort_order
 
 
 def add_or_update_product(product: Product):
+    """
+    add or update product
+    convert product into json and store in elasticsearch
+    """
     es: Elasticsearch = get_es_client()
     document = asdict(product)
     logger.debug(json.dumps(document))
@@ -61,6 +69,9 @@ def add_or_update_product(product: Product):
 
 
 def get_product_by_id(product_id) -> Product|None:
+    """
+    get product by id from elasticsearch, return none if not found
+    """
     es: Elasticsearch = get_es_client()
     try:
         es_result = es.get(index="product", id=product_id)

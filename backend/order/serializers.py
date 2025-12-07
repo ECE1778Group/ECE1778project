@@ -5,6 +5,11 @@ from order.models import MasterOrder, OrderItem
 
 
 class OrderSerializer(serializers.ModelSerializer):
+    """
+    Serializer for order
+    when checking request, order number is not required in the request body
+    when returning response, order number is converted to string to maintain length
+    """
     order_number = serializers.CharField(max_length=50, read_only=True)
     class Meta:
         model = MasterOrder
@@ -14,14 +19,24 @@ class OrderSerializer(serializers.ModelSerializer):
             return str(obj.order_number)
 
 class OrderItemRequestSerializer(serializers.Serializer):
+    """
+    Serializer for order item request only, used to check the request is valid
+    """
     product_id = serializers.CharField(max_length=50)
     quantity   = serializers.IntegerField(min_value=1)
 
 
 class OrderCreateRequestSerializer(serializers.Serializer):
+    """
+    Serializer for order create request only, used to check the request is valid
+    """
     items             = OrderItemRequestSerializer(many=True, allow_empty=False)
 
 class OrderItemSerializer(serializers.ModelSerializer):
+    """
+    Serializer for order item
+    master_order_number and sub_order_number will not be returned, they should be in upper serializer
+    """
     master_order_number = serializers.CharField(write_only=True)
     sub_order_number = serializers.CharField(write_only=True)
     class Meta:
@@ -29,6 +44,10 @@ class OrderItemSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class OrderDetailSerializer(OrderSerializer):
+    """
+    Serializer for order detail
+    the serializer will compose order items into order detail
+    """
     items = serializers.SerializerMethodField()
 
     @extend_schema_field(OrderItemSerializer(many=True))
