@@ -198,7 +198,7 @@ export default function Sell() {
   }, []);
 
   return (
-    <View style={[globalStyles.container, {paddingHorizontal: 16, paddingTop: 12}]}>
+    <ScrollView style={[globalStyles.container, {paddingHorizontal: 16, paddingTop: 12}]}>
       <Text style={styles.title}>Create a Listing</Text>
 
       <View style={styles.segment}>
@@ -358,7 +358,7 @@ export default function Sell() {
           </Pressable>
         </Animated.View>
       </Modal>
-    </View>
+    </ScrollView>
   );
 }
 
