@@ -321,6 +321,15 @@ docker compose exec backend python manage.py test chat
 
 
 ## Deployment Information
+
+We use GitHub Actions CI/CD to produce the Android build. When a new version tag (for example, `v1.0.0`) is pushed to the repository, the workflow runs an EAS production build for Android and uploads the generated APK/AAB as an asset to the corresponding GitHub Release.
+
+The Android build can be downloaded from our Releases page:
+
+- Android build (APK/AAB via EAS Build): https://github.com/ECE1778Group/ECE1778project/releases
+
+
+## Individual Contribution
 - **Xingda Jiang**
   - Implemented the core mobile UI and navigation flow.
   - Implemented pages and components
