@@ -8,12 +8,12 @@ also available in demo.mp4
 
 ## Team Information
 
-| Name          | Student Number | Email                         |
-|---------------|----------------|-------------------------------|
-| Xingda Jiang  | 1007170525     | jasonj.jiang@mail.utoronto.ca |
-| Guanqun Dong  | 1004525301     | guanqun.dong@mail.utoronto.ca |
-| Zijin Liao    | 1004303489     | zijin.liao@mail.utoronto.ca   |
-| Tianqi Ju     | 1012870467     | tianqi.ju@mail.utoronto.ca    |
+| Name          | Student Number | Email                         | Github Username    |
+|---------------|----------------|-------------------------------|--------------------|
+| Xingda Jiang  | 1007170525     | jasonj.jiang@mail.utoronto.ca | penguin-madagascar |
+| Guanqun Dong  | 1004525301     | guanqun.dong@mail.utoronto.ca | libramusician      |
+| Zijin Liao    | 1004303489     | zijin.liao@mail.utoronto.ca   | zijin523           |
+| Tianqi Ju     | 1012870467     | tianqi.ju@mail.utoronto.ca    | tju22              |
 
 
 ## Motivation
@@ -399,6 +399,7 @@ The Android build can be downloaded from our Releases page:
     - product
     - user
   - some integration debugging
+  
 - **Zijin Liao**
   - Online Chat
   - Chat list
@@ -407,6 +408,7 @@ The Android build can be downloaded from our Releases page:
   - JWT-based Authentication and Authorization
   - RESTful API
   - Image/Message Stream handling
+  
 - **Tianqi Ju**
   - Added automated tests for:
     - user
