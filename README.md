@@ -312,22 +312,22 @@ To run backend unit tests inside the Docker container:
 #### run all tests
 
 ```bash
-docker compose exec backend python manage.py test
+docker compose run --rm backend python manage.py test
 ```
 
 #### Run tests for a specific app
 
 ```bash
-docker compose exec backend python manage.py test user
+docker compose run --rm backend python manage.py test user
 ```
 ```bash
-docker compose exec backend python manage.py test order
+docker compose run --rm backend python manage.py test order
 ```
 ```bash
-docker compose exec backend python manage.py test product
+docker compose run --rm backend python manage.py test product
 ```
 ```bash
-docker compose exec backend python manage.py test chat
+docker compose run --rm backend python manage.py test chat
 ```
 
 ## Development Guide
