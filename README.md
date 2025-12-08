@@ -227,6 +227,7 @@ When the app detects a shared item snippet in your clipboard (e.g. “Item ID: 1
 
 
 ## Development Guide
+This section describes how to set up the local development environment for both backend and frontend, including required tools, environment variables, and local testing.
 
 ### build local apk and install on your phone(android)
 change the backend ip address EXPO_PUBLIC_API_BASE and EXPO_PUBLIC_IMAGE_BASE in .env pointing to your computer, then
@@ -241,11 +242,6 @@ this will create an apk in android/app/build/outputs/apk/release/app-release.apk
 
 then use USB to install the app on your phone.
 
-
-
-## Development Guide
-
-This section describes how to set up the local development environment for both backend and frontend, including required tools, environment variables, and local testing.
 #### important: 
 ```text
 due to network issue, backend may not run on the same machine with client.
