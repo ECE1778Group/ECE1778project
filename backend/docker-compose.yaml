@@ -19,6 +19,27 @@ services:
       elasticsearch:
         condition: service_healthy
 
+  backend-release:
+    profiles:
+      - release
+    image: backend-release:latest
+    container_name: backend
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - ./chat_images:/backend/chat_images
+      - ./backend/imageStorage:/backend/backend/imageStorage
+    command: bash -c "python esIndexInit.py && python manage.py migrate && python manage.py shell < initTestUser.py && python manage.py runserver 0.0.0.0:80"
+    networks:
+      - backend-network
+    ports:
+      - "8000:80/tcp"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+
   elasticsearch:
     profiles:
       - dev

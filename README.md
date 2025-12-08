@@ -242,15 +242,21 @@ To start backend, MYSQL_ROOT_PASSWORD environment variable must be set to start 
 ### backend setup
 navigate to backend folder, build backend develop container by
 
-> docker build . -t backend:latest
-
 for develop environment, use
 
+> docker build . --target dev -t backend:latest
+> 
 > docker-compose --profile dev up -d
 
 for release environment, use
 
+> docker build . --target release -t backend-release:latest
+> 
 > docker-compose --profile release up -d
+
+wait for backend to start, usually should within 30s, 
+
+if backend failed to start due to waiting for elasticsearch timeout, try again
 ```text
 all profile provides following service:
 mysql on port 3306, redis on port 6379, elasticsearch on port 9200
