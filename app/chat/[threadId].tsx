@@ -195,23 +195,50 @@ export default function ChatThread() {
 
   useEffect(() => {
     (async () => {
-      const {status} = await Location.requestForegroundPermissionsAsync();
-      if (status === "granted") {
-        const pos = await Location.getCurrentPositionAsync({});
-        const {latitude, longitude} = pos.coords;
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== "granted") {
+          console.warn("Location permission not granted");
+          return;
+        }
+
+        let pos = await Location.getLastKnownPositionAsync();
+
+        if (!pos) {
+          try {
+            pos = await Location.getCurrentPositionAsync({});
+          } catch (err) {
+            console.warn("getCurrentPositionAsync failed:", err);
+          }
+        }
+
+        if (!pos) {
+          console.warn("Using fallback location");
+          pos = {
+            coords: {
+              latitude: 37.7749,
+              longitude: -122.4194,
+              accuracy: 1,
+              altitude: 0,
+              altitudeAccuracy: 1,
+              heading: 0,
+              speed: 0,
+            },
+            timestamp: Date.now(),
+          };
+        }
+
+        const { latitude, longitude } = pos.coords;
+
         setPickerRegion({
           latitude,
           longitude,
           latitudeDelta: 0.01,
           longitudeDelta: 0.01,
         });
-      } else {
-        setPickerRegion({
-          latitude: 43.6629,
-          longitude: -79.3957,
-          latitudeDelta: 0.02,
-          longitudeDelta: 0.02,
-        });
+
+      } catch (e) {
+        console.warn("Location error:", e);
       }
     })();
   }, []);
