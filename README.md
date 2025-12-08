@@ -1,7 +1,9 @@
 # Final report
 ## Video Demo
 **Video URL:**
-<PLACEHOLDER – insert YouTube / Google Drive / Dropbox link here>
+https://youtube.com/shorts/IVdWhLth9r8?feature=share
+
+also available in demo.mp4
 
 
 ## Team Information
@@ -228,14 +230,12 @@ When the app detects a shared item snippet in your clipboard (e.g. “Item ID: 1
 #### important: 
 ```text
 due to network issue, backend may not run on the same machine with client.
-the client should change the BASE_URL and IMAGE_URL_PREFIX in constant.ts to point to the real backend IP address
+the client should change the EXPO_PUBLIC_API_BASE and EXPO_PUBLIC_IMAGE_BASE in .env to point to the real backend IP address
 The localhost in mobile app point to itself.
 even If you are using emulator, backend network may not be accessible from emulator network.
 To test network setup, visit http://{backend_ip}:8000/api/docs,
 if you can see the page, you can access backend from this device
-There are two options so far,
-1. run the backend in different machine in Lan, use development build for client in the emulator.
-2. run the client on your real phone, use expo go.
+It's recommended to use release apk on a real device and backend on your computer.
 
 To start backend, MYSQL_ROOT_PASSWORD environment variable must be set to start mysql
 ```
@@ -263,7 +263,18 @@ initTestUser.py creates a test user "testuser" alice with password "test", "test
 development code will be mapped into dev container so that it will be on the same network to other services
 changing of dependency need to rebuild the image
 ```
+### build local apk and install on your phone(android)
+change the backend ip address EXPO_PUBLIC_API_BASE and EXPO_PUBLIC_IMAGE_BASE in .env pointing to your computer, then
 
+> npx expo prebuild --platform android
+
+this will create an android folder, then
+> cd android
+> .\gradlew assembleRelease (windows)
+
+this will create an apk in android/app/build/outputs/apk/release/app-release.apk.
+
+then use USB to install the app on your phone.
 
 ### documentation
 
@@ -425,9 +436,14 @@ The Android build can be downloaded from our Releases page:
   - CI/CD for Android .apk deployment
 
 - **Guanqun Dong**
-  -
+  - backend architecture
+  - backend basic implementation,
+    - chat, 
+    - order, 
+    - product
+    - user
+  - some integration debugging
 - **Zijin Liao**
-  -
 - **Tianqi Ju**
   - 
 
