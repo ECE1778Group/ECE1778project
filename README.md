@@ -445,7 +445,12 @@ The Android build can be downloaded from our Releases page:
   - some integration debugging
 - **Zijin Liao**
 - **Tianqi Ju**
-  - 
+  - Added automated tests for:
+    - user
+    - order
+    - product
+    - chat
+  - Fixed issues discovered during testing
 
 
 ## Lessons Learned and Concluding Remarks
