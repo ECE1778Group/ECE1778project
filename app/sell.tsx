@@ -57,7 +57,7 @@ export default function Sell() {
     } else {
       if (category.trim()) extras.push(`Category:${category.trim()}`);
     }
-    return extras.join("\n") || "";
+    return extras.join("\n") || "No Description";
   };
 
   const pickFromLibrary = async () => {
@@ -198,7 +198,7 @@ export default function Sell() {
   }, []);
 
   return (
-    <View style={[globalStyles.container, {paddingHorizontal: 16, paddingTop: 12}]}>
+    <ScrollView style={[globalStyles.container, {paddingHorizontal: 16, paddingTop: 12}]}>
       <Text style={styles.title}>Create a Listing</Text>
 
       <View style={styles.segment}>
@@ -358,7 +358,7 @@ export default function Sell() {
           </Pressable>
         </Animated.View>
       </Modal>
-    </View>
+    </ScrollView>
   );
 }
 

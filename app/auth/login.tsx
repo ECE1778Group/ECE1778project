@@ -27,8 +27,8 @@ export default function Login() {
       console.log("...")
       showMessage("Login successful!", "success");
       router.replace("/");
-    } catch {
-      showMessage("Login failed. Please check your email or password.", "error");
+    } catch (error){
+      showMessage(`Login failed: ${error}`, 'error');
     }
   };
 

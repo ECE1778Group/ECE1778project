@@ -1,2 +1,2 @@
-export const BASE_URL = "http://10.0.2.2:8000";
-export const IMAGE_URL_PREFIX = "http://10.0.2.2:8090/";
+export const BASE_URL = process.env.EXPO_PUBLIC_API_BASE || "http://localhost:8000";
+export const IMAGE_URL_PREFIX = process.env.EXPO_PUBLIC_IMAGE_BASE || "http://localhost:8090/";

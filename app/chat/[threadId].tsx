@@ -481,7 +481,9 @@ export default function ChatThread() {
       });
       if (res && res[0]) {
         const r = res[0];
-        address = [r.name, r.street, r.city, r.region].filter(Boolean).join(", ");
+        address = [r.name, r.street, r.city, r.region]
+          .filter(Boolean)
+          .join(", ");
       }
     } catch {}
 

@@ -4,6 +4,9 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth import authenticate
 
 class UserSerializer(serializers.ModelSerializer):
+    """
+    Serializer for user, password will not be returned
+    """
     password = serializers.CharField(write_only=True, required=True)
 
     class Meta:
@@ -11,6 +14,9 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['id', 'username', 'password', 'email', 'first_name', 'last_name', "avatar_url",]
 
     def create(self, validated_data):
+        """
+        create new user, password will be converted to hashed password
+        """
         raw_pwd = validated_data.pop('password')
         user = User(**validated_data)
         user.set_password(raw_pwd)
