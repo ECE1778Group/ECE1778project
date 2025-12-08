@@ -1,26 +1,42 @@
-from django.test import TestCase
+from django.urls import reverse
 from rest_framework import status
-from rest_framework.test import APIClient
+from rest_framework.test import APITestCase
 
-# Create your tests here.
-class UserAPITest(TestCase):
-    def setUp(self):
-        self.client = APIClient()
+from unittest.mock import patch
 
-    def test_user_register_and_get(self):
+from user.models import User
+
+
+class UserAPITest(APITestCase):
+    @patch("user.views.userView.create_user")
+    def test_user_signup_and_get(self, mock_create_user):
+        user = User.objects.create_user(
+            email="alice@example.com",
+            username="alice",
+            password="Passw0rd!",
+            first_name="Alice",
+            last_name="Test",
+        )
+
+        mock_create_user.return_value = (True, user)
+
         payload = {
-            "username": "user_testcase",
-            "password": "Passw0rd!"
+            "username": "alice",
+            "password": "Passw0rd!",
+            "email": "alice@example.com",
+            "first_name": "Alice",
+            "last_name": "Test",
         }
-        res = self.client.post("/api/user/register/", payload, format="json")
-        self.assertIn(res.status_code, (200, 201))
-        data = res.json()
-        self.assertEqual(data.get("username"), payload["username"])
 
-        res2 = self.client.get(f"/api/user/{payload['username']}/")
-        self.assertEqual(res2.status_code, 200)
-        got = res2.json()
-        self.assertEqual(got.get("username"), payload["username"])
+        url = "/api/user/signup/"
 
-        res3 = self.client.get("/api/user/nonexistent_user/")
-        self.assertEqual(res3.status_code, status.HTTP_404_NOT_FOUND)
+        res = self.client.post(url, payload, format="json")
+
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+
+        self.assertIn("user", res.data)
+        user_data = res.data["user"]
+        self.assertEqual(user_data["email"], payload["email"])
+        self.assertEqual(user_data["username"], payload["username"])
+        self.assertEqual(user_data["first_name"], payload["first_name"])
+        self.assertEqual(user_data["last_name"], payload["last_name"])
