@@ -11,7 +11,7 @@ also available in demo.mp4
 | Name          | Student Number | Email                         |
 |---------------|----------------|-------------------------------|
 | Xingda Jiang  | 1007170525     | jasonj.jiang@mail.utoronto.ca |
-| Guanqun Dong  | 1004525301     | TODO: add email               |
+| Guanqun Dong  | 1004525301     | guanqun.dong@mail.utoronto.ca |
 | Zijin Liao    | 1004303489     | TODO: add email               |
 | Tianqi Ju     | 1012870467     | tianqi.ju@mail.utoronto.ca    |
 
@@ -438,8 +438,8 @@ The Android build can be downloaded from our Releases page:
 - **Guanqun Dong**
   - backend architecture
   - backend basic implementation,
-    - chat, 
-    - order, 
+    - chat
+    - order
     - product
     - user
   - some integration debugging
