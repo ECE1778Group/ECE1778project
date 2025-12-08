@@ -450,6 +450,13 @@ The Android build can be downloaded from our Releases page:
     - user
   - some integration debugging
 - **Zijin Liao**
+  - Online Chat
+  - Chat list
+  - User signin && signup
+  - User profile
+  - JWT-based Authentication and Authorization
+  - RESTful API
+  - Image/Message Stream handling
 - **Tianqi Ju**
   - Added automated tests for:
     - user
