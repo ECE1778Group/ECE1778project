@@ -85,10 +85,6 @@ export default function Login() {
       <Button mode="outlined" onPress={handleSignup} style={styles.button}>
         Create an Account
       </Button>
-
-      <Button onPress={handleSkip} textColor={colors.textPrimary}>
-        Continue as Guest
-      </Button>
     </View>
   );
 }
