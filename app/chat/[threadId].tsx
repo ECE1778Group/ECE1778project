@@ -26,6 +26,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import {BASE_URL, IMAGE_URL_PREFIX} from "../../constant";
 import {useFetch} from "../../lib/api/fetch-client";
 import { mapToImageHost } from "../../lib/utils/imageHost";
+import {useMessage} from "../../contexts/MessageContext";
 
 type BaseMsg = {
   id: string;
@@ -53,6 +54,7 @@ export default function ChatThread() {
   const router = useRouter();
   const {user} = useAuth();
   const {getData} = useFetch();
+  const {showMessage} = useMessage();
 
   const meUsername = user.username;
   const peerUsername = peerFromRoute ? String(peerFromRoute) : "";
@@ -194,27 +196,91 @@ export default function ChatThread() {
   }, [token, meUsername]);
 
   useEffect(() => {
+    let cancelled = false;
+
     (async () => {
-      const {status} = await Location.requestForegroundPermissionsAsync();
-      if (status === "granted") {
-        const pos = await Location.getCurrentPositionAsync({});
-        const {latitude, longitude} = pos.coords;
-        setPickerRegion({
-          latitude,
-          longitude,
-          latitudeDelta: 0.01,
-          longitudeDelta: 0.01,
-        });
-      } else {
-        setPickerRegion({
-          latitude: 43.6629,
-          longitude: -79.3957,
-          latitudeDelta: 0.02,
-          longitudeDelta: 0.02,
-        });
+      try {
+        const { status, granted } =
+          await Location.requestForegroundPermissionsAsync();
+
+        if (!granted) {
+          console.warn("Location permission not granted");
+          showMessage("Location permission not granted", "error");
+          return;
+        }
+
+        const servicesEnabled = await Location.hasServicesEnabledAsync();
+        console.log("servicesEnabled:", servicesEnabled);
+
+        if (!servicesEnabled) {
+          console.warn("[location] services disabled, using fallback");
+          if (!cancelled) {
+            setPickerRegion({
+              latitude: 37.7749,
+              longitude: -122.4194,
+              latitudeDelta: 0.01,
+              longitudeDelta: 0.01,
+            });
+          }
+          return;
+        }
+
+        let pos = await Location.getLastKnownPositionAsync();
+
+        if (!pos) {
+          try {
+            pos = await Location.getCurrentPositionAsync({
+              accuracy: Location.Accuracy.Balanced,
+              mayShowUserSettingsDialog: true,
+            });
+          } catch (err) {
+            console.warn("[location] getCurrentPositionAsync failed:", err);
+          }
+        }
+
+        if (!pos) {
+          console.warn("[location] no position, using fallback");
+          pos = {
+            coords: {
+              latitude: 37.7749,
+              longitude: -122.4194,
+              accuracy: 1,
+              altitude: 0,
+              altitudeAccuracy: 1,
+              heading: 0,
+              speed: 0,
+            },
+            timestamp: Date.now(),
+          };
+        }
+
+        if (!cancelled) {
+          const { latitude, longitude } = pos.coords;
+          setPickerRegion({
+            latitude,
+            longitude,
+            latitudeDelta: 0.01,
+            longitudeDelta: 0.01,
+          });
+        }
+      } catch (e) {
+        console.warn("Location error:", e);
+        if (!cancelled) {
+          setPickerRegion({
+            latitude: 37.7749,
+            longitude: -122.4194,
+            latitudeDelta: 0.01,
+            longitudeDelta: 0.01,
+          });
+        }
       }
     })();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
+
 
   useEffect(() => {
     if (expanded) {
