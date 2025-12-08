@@ -227,48 +227,7 @@ When the app detects a shared item snippet in your clipboard (e.g. “Item ID: 1
 
 
 ## Development Guide
-#### important: 
-```text
-due to network issue, backend may not run on the same machine with client.
-the client should change the EXPO_PUBLIC_API_BASE and EXPO_PUBLIC_IMAGE_BASE in .env to point to the real backend IP address
-The localhost in mobile app point to itself.
-even If you are using emulator, backend network may not be accessible from emulator network.
-To test network setup, visit http://{backend_ip}:8000/api/docs,
-if you can see the page, you can access backend from this device
-It's recommended to use release apk on a real device and backend on your computer.
 
-To start backend, MYSQL_ROOT_PASSWORD environment variable must be set to start mysql
-```
-### backend setup
-navigate to backend folder, build backend develop container by
-
-for develop environment, use
-
-> docker build . --target dev -t backend:latest
-> 
-> docker-compose --profile dev up -d
-
-for release environment, use
-
-> docker build . --target release -t backend-release:latest
-> 
-> docker-compose --profile release up -d
-
-wait for backend to start, usually should within 30s, 
-
-if backend failed to start due to waiting for elasticsearch timeout, try again
-```text
-all profile provides following service:
-mysql on port 3306, redis on port 6379, elasticsearch on port 9200
-
-dev profile provies extra visualization tools:
-phpmyadmin on port 8080, redis insight on port 5540, kibana on port 5601, backend-dev-container on 8000
-
-init elasticsearch index by running esIndexInit.py this will set up tokenizer for search (auto run in dev container)
-initTestUser.py creates a test user "testuser" alice with password "test", "testuser2" bob with password "test" (auto run in dev container)
-development code will be mapped into dev container so that it will be on the same network to other services
-changing of dependency need to rebuild the image
-```
 ### build local apk and install on your phone(android)
 change the backend ip address EXPO_PUBLIC_API_BASE and EXPO_PUBLIC_IMAGE_BASE in .env pointing to your computer, then
 
@@ -282,64 +241,23 @@ this will create an apk in android/app/build/outputs/apk/release/app-release.apk
 
 then use USB to install the app on your phone.
 
-### documentation
 
-backend api document available at http://{backend_ip}:8000/api/docs
-
-### real time chat API
-
-when user login, the mobile device will establish a websocket connection with server by ws://localhost:8000/chat/.
-
-backend will save a mapping between username and this connection.
-
-when sending a chat message, the format should be like this
-
-```json
-{
-    "type": "chat_message",
-    "me": "alice",
-    "peer": "bob",
-    "message": "hello"
-}
-```
-the peer will receive a message like this
-```json
-{
-    "type": "chat_message",
-    "message": "hello",
-    "sender": "alice"
-}
-```
-
-### running tests
-
-To run backend unit tests inside the Docker container:
-
-#### run all tests
-
-```bash
-docker compose run --rm backend python manage.py test
-```
-
-#### Run tests for a specific app
-
-```bash
-docker compose run --rm backend python manage.py test user
-```
-```bash
-docker compose run --rm backend python manage.py test order
-```
-```bash
-docker compose run --rm backend python manage.py test product
-```
-```bash
-docker compose run --rm backend python manage.py test chat
-```
 
 ## Development Guide
 
 This section describes how to set up the local development environment for both backend and frontend, including required tools, environment variables, and local testing.
+#### important: 
+```text
+due to network issue, backend may not run on the same machine with client.
+the client should change the EXPO_PUBLIC_API_BASE and EXPO_PUBLIC_IMAGE_BASE in .env to point to the real backend IP address
+The localhost in mobile app point to itself.
+even If you are using emulator, backend network may not be accessible from emulator network.
+To test network setup, visit http://{backend_ip}:8000/api/docs,
+if you can see the page, you can access backend from this device
+It's recommended to use release apk on a real device and backend on your computer.
 
+To start backend, MYSQL_ROOT_PASSWORD environment variable must be set to start mysql
+```
 ### Prerequisites
 
 - Node.js and npm (LTS recommended)
@@ -384,17 +302,53 @@ Add any additional Django settings (for example `SECRET_KEY`, `DEBUG`, etc.) as 
 
 2. Make sure `backend/.env` exists as described above.
 
-3. Start the backend services in development mode:
-   
-   - `docker compose --profile dev up --build`
+3. for develop environment, use
+
+> docker build . --target dev -t backend:latest
+> 
+> docker-compose --profile dev up -d
+
+for release environment, use
+
+> docker build . --target release -t backend-release:latest
+> 
+> docker-compose --profile release up -d
+
+wait for backend to start, usually should within 30s, 
+
+if backend failed to start due to waiting for elasticsearch timeout, try again
+
 
 4. Once the containers are running, verify the backend:
    
-   - API docs: open `http://localhost:8000/api/docs/` in a browser  
-   - Static images: open `http://localhost:8090/`
+   - API docs: open `http://{backend_ip}:8000/api/docs/` in a browser  
+   - Static images: open `http://{backend_ip}:8090/`
 
 The backend should now be ready for local development and reachable from the frontend using the configured base URLs.
+### running backend tests
 
+To run backend unit tests inside the Docker container:
+
+#### run all tests
+
+```bash
+docker compose run --rm backend python manage.py test
+```
+
+#### Run tests for a specific app
+
+```bash
+docker compose run --rm backend python manage.py test user
+```
+```bash
+docker compose run --rm backend python manage.py test order
+```
+```bash
+docker compose run --rm backend python manage.py test product
+```
+```bash
+docker compose run --rm backend python manage.py test chat
+```
 ### Frontend setup and local testing
 
 1. In the project root, ensure `.env` exists as described above.
